@@ -18,32 +18,25 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_math.h"
+#include "hdf_helper.h"
 
-const size_t N = 1024;
+#include <stdio.h>
 
 int main(int argc, char* argv[])
 {
-	float32_t A[N][N];
-	float32_t X[N];
-	float32_t Y[N];
-	float32_t M[N / 2];
+	const char* path = argc > 1 ? argv[1] : "mul_out.hdf";
 
-	arm_matrix_instance_f32 mat_A;
-	arm_mat_init_f32(&mat_A, N, N, (float32_t*) A);
+	hdf_matrix mat;
 
-	arm_matrix_instance_f32 mat_X;
-	arm_mat_init_f32(&mat_X, N, 1, X);
+	int err = hdf_load_matrix(path, "/A/value", &mat);
 
-	arm_matrix_instance_f32 mat_Y;
-	arm_mat_init_f32(&mat_Y, N, 1, Y);
+	if (err) return err;
 
-	arm_rfft_fast_instance_f32 S;
-	arm_rfft_fast_init_f32(&S, N);
+	printf("matrix loaded\n");
+	printf("\tcols: %lu\n", mat.cols);
+	printf("\trows: %lu\n", mat.rows);
 
-	arm_mat_mult_f32(&mat_A, &mat_X, &mat_Y);
-	arm_rfft_fast_f32(&S, X, Y, 0);
-	arm_cmplx_mag_f32(Y, M, N / 2);
+	hdf_free_matrix(&mat);
 
 	return 0;
 }

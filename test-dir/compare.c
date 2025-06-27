@@ -18,32 +18,22 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_math.h"
-
-const size_t N = 1024;
+#include "mat_helper.h"
 
 int main(int argc, char* argv[])
 {
-	float32_t A[N][N];
-	float32_t X[N];
-	float32_t Y[N];
-	float32_t M[N / 2];
+	const float32_t a[] = { 1.100, 2.200, 3.300 };
+	const float32_t b[] = { 1.101, 2.201, 3.301 };
 
-	arm_matrix_instance_f32 mat_A;
-	arm_mat_init_f32(&mat_A, N, N, (float32_t*) A);
+	const size_t n1 = sizeof(a) / sizeof(float32_t);
+	const size_t n2 = sizeof(b) / sizeof(float32_t);
+	const size_t n = n1 > n2 ? n2 : n1;
 
-	arm_matrix_instance_f32 mat_X;
-	arm_mat_init_f32(&mat_X, N, 1, X);
+	if (!mat_compare_epsilon(a, b, n, 0.00101)) return 1;
+	if (mat_compare_epsilon(a, b, n,  0.00099)) return 2;
 
-	arm_matrix_instance_f32 mat_Y;
-	arm_mat_init_f32(&mat_Y, N, 1, Y);
-
-	arm_rfft_fast_instance_f32 S;
-	arm_rfft_fast_init_f32(&S, N);
-
-	arm_mat_mult_f32(&mat_A, &mat_X, &mat_Y);
-	arm_rfft_fast_f32(&S, X, Y, 0);
-	arm_cmplx_mag_f32(Y, M, N / 2);
+	if (!mat_compare_relative(a, b, n, 0.00091)) return 3;
+	if (mat_compare_relative(a, b, n,  0.00089)) return 4;
 
 	return 0;
 }

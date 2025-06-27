@@ -18,32 +18,26 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_math.h"
+#include "mat_helper.h"
 
-const size_t N = 1024;
-
-int main(int argc, char* argv[])
+bool mat_compare_epsilon(const float32_t* a, const float32_t* b,
+					const size_t n, const float32_t e)
 {
-	float32_t A[N][N];
-	float32_t X[N];
-	float32_t Y[N];
-	float32_t M[N / 2];
+	for (size_t i = 0; i < n; ++i)
+	{
+		if (fabsf(a[i] - b[i]) > e) return false;
+	}
 
-	arm_matrix_instance_f32 mat_A;
-	arm_mat_init_f32(&mat_A, N, N, (float32_t*) A);
+	return true;
+}
 
-	arm_matrix_instance_f32 mat_X;
-	arm_mat_init_f32(&mat_X, N, 1, X);
+bool mat_compare_relative(const float32_t* a, const float32_t* b,
+					 const size_t n, const float32_t e)
+{
+	for (size_t i = 0; i < n; ++i)
+	{
+		if (fabsf((a[i] - b[i]) / b[i]) > e) return false;
+	}
 
-	arm_matrix_instance_f32 mat_Y;
-	arm_mat_init_f32(&mat_Y, N, 1, Y);
-
-	arm_rfft_fast_instance_f32 S;
-	arm_rfft_fast_init_f32(&S, N);
-
-	arm_mat_mult_f32(&mat_A, &mat_X, &mat_Y);
-	arm_rfft_fast_f32(&S, X, Y, 0);
-	arm_cmplx_mag_f32(Y, M, N / 2);
-
-	return 0;
+	return true;
 }
