@@ -12,3 +12,4 @@ CTestTestfile.cmake
 
 # Default build dir
 build-dir/*
+data-dir/*

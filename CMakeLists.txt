@@ -35,5 +35,8 @@ add_executable(cmptest test-dir/compare.c)
 target_link_libraries(cmptest PUBLIC mat-helper)
 add_test(NAME test-compare COMMAND cmptest)
 
-execute_process(COMMAND octave gen_multest.m	WORKING_DIRECTORY ${PROJECT_DIR}/src-dir)
-file(COPY data-dir/mul_out.hdf DESTINATION ${PROJECT_BINARY_DIR})
+execute_process(COMMAND octave gen_multest.m WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+execute_process(COMMAND octave gen_fwtmat.m WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+
+file(GLOB HDF_SAVED_VARIABLES "${PROJECT_SOURCE_DIR}/data-dir/*.hdf")
+file(COPY ${HDF_SAVED_VARIABLES} DESTINATION ${PROJECT_BINARY_DIR})
