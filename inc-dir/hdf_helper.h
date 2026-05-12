@@ -40,4 +40,6 @@ typedef struct
 int hdf_load_matrix(const char* filename, const char* varname, hdf_matrix* out);
 void hdf_free_matrix(hdf_matrix* matrix);
 
+void hdf_print_matrix(const hdf_matrix* matrix);
+
 #endif // HDF_HELPER_H

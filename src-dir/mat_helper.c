@@ -41,3 +41,15 @@ bool mat_compare_relative(const float32_t* a, const float32_t* b,
 
 	return true;
 }
+
+void mat_print_matrix(const float32_t* data, size_t rows, size_t cols)
+{
+	for (size_t i = 0; i < rows; ++i)
+	{
+		for (size_t j = 0; j < cols; ++j)
+		{
+			printf("%+5.5f\t", data[j*rows + i]);
+		}
+		printf("\n");
+	}
+}

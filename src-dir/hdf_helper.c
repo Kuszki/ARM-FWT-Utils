@@ -101,3 +101,15 @@ void hdf_free_matrix(hdf_matrix* matrix)
 	matrix->cols = 0;
 	matrix->rows = 0;
 }
+
+void hdf_print_matrix(const hdf_matrix* matrix)
+{
+	for (size_t i = 0; i < matrix->rows; ++i)
+	{
+		for (size_t j = 0; j < matrix->cols; ++j)
+		{
+			printf("%+5.5f\t", matrix->data[j*matrix->rows + i]);
+		}
+		printf("\n");
+	}
+}

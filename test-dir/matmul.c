@@ -23,9 +23,9 @@
 
 static void clean(hdf_matrix* a, hdf_matrix* x, hdf_matrix* y)
 {
-	hdf_free_matrix(a);
-	hdf_free_matrix(x);
-	hdf_free_matrix(y);
+	if (a) hdf_free_matrix(a);
+	if (x) hdf_free_matrix(x);
+	if (y) hdf_free_matrix(y);
 }
 
 int main(int argc, char* argv[])
@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
 
 	hdf_matrix mA, mX, mY;
 
-	if (hdf_load_matrix(path, "/A/value", &mA)) { clean(&mA, &mX, &mY); return 1; }
-	if (hdf_load_matrix(path, "/X/value", &mX)) { clean(&mA, &mX, &mY); return 2; }
+	if (hdf_load_matrix(path, "/A/value", &mA)) { clean(&mA, nullptr, nullptr); return 1; }
+	if (hdf_load_matrix(path, "/X/value", &mX)) { clean(&mA, &mX, nullptr); return 2; }
 	if (hdf_load_matrix(path, "/Y/value", &mY)) { clean(&mA, &mX, &mY); return 3; }
 
 	printf("A: %lu x %lu\n", mA.rows, mA.cols);

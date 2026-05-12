@@ -18,17 +18,37 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef MAT_HELPER_H
-#define MAT_HELPER_H
+#include "mat_helper.h"
+#include "hdf_helper.h"
+#include "fwt_mallat.h"
 
-#include "arm_math.h"
+int main(int argc, char* argv[])
+{
+	const char* path = argc > 1 ? argv[1] : "mallat_out.hdf";
 
-#include <stdbool.h>
-#include <stdio.h>
+	hdf_matrix mA, mC, mB, mX, mY;
 
-bool mat_compare_epsilon(const float32_t* a, const float32_t* b, const size_t n, const float32_t e);
-bool mat_compare_relative(const float32_t* a, const float32_t* b, const size_t n, const float32_t e);
+	if (hdf_load_matrix(path, "/C/value", &mC)) return 1;
+	if (hdf_load_matrix(path, "/B/value", &mB)) return 2;
 
-void mat_print_matrix(const float32_t* data, size_t rows, size_t cols);
+	printf("\nvec. C org:\n");
+	hdf_print_matrix(&mC);
+	printf("\nvec. B org:\n");
+	hdf_print_matrix(&mB);
 
-#endif // HDF_HELPER_H
+	if (mC.rows != mB.rows || mC.cols != mB.cols) return 3;
+
+	const size_t NC = MAX(mC.rows, mC.cols);
+	float32_t b[NC];
+
+	printf("\nvec. B out:\n");
+	fwt_gen_b(mC.data, b, NC);
+	mat_print_matrix(b, mC.rows, mC.cols);
+
+	bool ok = mat_compare_relative(mB.data, b, NC, 1e-6);
+
+	hdf_free_matrix(&mC);
+	hdf_free_matrix(&mB);
+
+	return ok ? 0 : -1;
+}
