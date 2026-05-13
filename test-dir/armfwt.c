@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_fwt_f32.h"
+#include "arm_wt_f32.h"
 #include "hdf_helper.h"
 #include "mat_helper.h"
 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 
      for (size_t i = 0; i < N; ++i) in_u[i] = mX.data[i];
 
-     arm_fwt_f32_instance fwt = {
+     arm_wt_f32_instance fwt = {
           .c = mC.data,
           .b = mB.data,
           .c_len = NC,
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
           .shift = 0.0f,
      };
 
-     arm_fwt_status s = arm_fwt_f32_init(&fwt);
+     arm_wt_status s = arm_fwt_f32_init(&fwt);
 
      printf("\nlens:\n");
      for (size_t i = 0; i <= fwt.n_dec; ++i)
@@ -70,9 +70,9 @@ int main(int argc, char* argv[])
           printf("\t%zu", fwt.lens[i]);
      }
 
-     if (s != FWT_STATUS_SUCCESS) return 8;
+     if (s != WT_STATUS_SUCCESS) return 8;
 
-     arm_fwt_f32_run(&fwt, in_u);
+     arm_wt_f32_run(&fwt, in_u);
 
      printf("\ninput:\n");
      mat_print_matrix(fwt.in, 1, fwt.n_len + fwt.c_len - 1);
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
           mat_print_matrix(fwt.out[i], 1, fwt.lens[i]);
      }
 
-     arm_fwt_f32_run(&fwt, in_u);
+     arm_wt_f32_run(&fwt, in_u);
 
      for (size_t i = 0; i < fwt.n_dec; ++i)
      {
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
           mat_print_matrix(fwt.out[i], 1, fwt.lens[i]);
      }
 
-     arm_fwt_f32_free(&fwt);
+     arm_wt_f32_free(&fwt);
 
      hdf_free_matrix(&mC);
      hdf_free_matrix(&mB);

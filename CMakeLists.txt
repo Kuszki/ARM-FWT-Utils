@@ -26,12 +26,10 @@ add_library(helper-mat
 target_link_libraries(helper-mat PUBLIC CMSISDSP m)
 
 add_library(lib-fwt
-	src-dir/fwt_mallat.c
-	inc-dir/fwt_mallat.h
-	src-dir/arm_dwt_f32.c
-	inc-dir/arm_dwt_f32.h
-	src-dir/arm_fwt_f32.c
-	inc-dir/arm_fwt_f32.h)
+	src-dir/arm_mal_f32.c
+	inc-dir/arm_mal_f32.h
+	src-dir/arm_wt_f32.c
+	inc-dir/arm_wt_f32.h)
 target_link_libraries(lib-fwt PUBLIC CMSISDSP m)
 
 add_executable(test-base test-dir/base.c)
@@ -58,9 +56,9 @@ add_executable(test-mall test-dir/mallat.c)
 target_link_libraries(test-mall PUBLIC helper-mat helper-hdf lib-fwt)
 add_test(NAME test-mallat COMMAND test-mall)
 
-add_executable(test-pre test-dir/armdwt.c)
-target_link_libraries(test-pre PUBLIC helper-mat helper-hdf lib-fwt)
-add_test(NAME test-premade COMMAND test-pre)
+add_executable(test-cwt test-dir/armcwt.c)
+target_link_libraries(test-cwt PUBLIC helper-mat helper-hdf lib-fwt)
+add_test(NAME test-armcwt COMMAND test-cwt)
 
 add_executable(test-fwt test-dir/armfwt.c)
 target_link_libraries(test-fwt PUBLIC helper-mat helper-hdf lib-fwt)

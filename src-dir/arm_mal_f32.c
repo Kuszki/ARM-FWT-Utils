@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "fwt_mallat.h"
+#include "arm_mal_f32.h"
 
 static const float32_t INV_SQRT2 = 0.7071067811865475f;
 

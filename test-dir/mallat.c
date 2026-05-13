@@ -18,7 +18,9 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "fwt_mallat.h"
+#include "arm_mal_f32.h"
+#include "arm_wt_f32.h"
+
 #include "mat_helper.h"
 #include "hdf_helper.h"
 
@@ -87,6 +89,26 @@ int main(int argc, char* argv[])
 
      printf("fwt_malat_ext_par: %s", ok2 ? "OK" : "FAIL");
 
+     memset(out, 0, N * sizeof(float32_t));
+
+     const float32_t inv_sq2 = 1 / sqrt(2);
+     float32_t sqC[NC], sqB[NC];
+
+     for (size_t i = 0; i < NC; ++i)
+     {
+          sqC[i] = mC.data[i] * inv_sq2;
+          sqB[i] = mB.data[i] * inv_sq2;
+     }
+
+     arm_wt_f32_mallat(ext, out, N, 2, sqC, sqB, NC);
+
+     printf("\nout arm_wt_f32_mallat:\n");
+     mat_print_matrix(out, mY.rows, mY.cols);
+
+     bool ok4 = mat_compare_epsilon(mY.data, out, N, 1e-6);
+
+     printf("fwt_malat_ext_par: %s", ok2 ? "OK" : "FAIL");
+
      uint32_t uint_in[N];
      const float32_t scale = 0.696969f;
 
@@ -106,5 +128,5 @@ int main(int argc, char* argv[])
      hdf_free_matrix(&mX);
      hdf_free_matrix(&mY);
 
-     return ok1 && ok2 && ok3 ? 0 : -1;
+     return ok1 && ok2 && ok3 && ok4 ? 0 : -1;
 }

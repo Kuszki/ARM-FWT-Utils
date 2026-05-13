@@ -18,19 +18,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_fwt_f32.h"
+#include "arm_wt_f32.h"
+#include "arm_math_types.h"
 
 #include <stdlib.h>
 
 static const float32_t INV_SQRT2 = 0.7071067811865475f;
 
-arm_fwt_status arm_fwt_f32_init(arm_fwt_f32_instance* instance)
+arm_wt_status arm_fwt_f32_init(arm_wt_f32_instance* instance)
 {
-     if (!instance->n_len) return FWT_WRONG_NLEN;
+     if (!instance->n_len) return WT_WRONG_NLEN;
+     if (!instance->c_len) return WT_WRONG_CLEN;
 
-     if (!(instance->n_len >> instance->n_dec)) return FWT_WRONG_NDEC;
+     if (!instance->c || !instance->b) return WT_WRONG_CPTR;
+
+     if (!(instance->n_len >> instance->n_dec)) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
+     instance->dec = 2;
 
      instance->buf = malloc((instance->n_dec * 2) * sizeof(float32_t*));
      instance->out = malloc((instance->n_dec + 1) * sizeof(float32_t*));
@@ -46,8 +51,8 @@ arm_fwt_status arm_fwt_f32_init(arm_fwt_f32_instance* instance)
           instance->buf[2 * i] = malloc(curr_len * sizeof(float32_t));
           instance->buf[2 * i + 1] = malloc(curr_len * sizeof(float32_t));
 
-          arm_fwt_f32_zero(instance->buf[2 * i], curr_len);
-          arm_fwt_f32_zero(instance->buf[2 * i + 1], curr_len);
+          arm_wt_f32_zero(instance->buf[2 * i], curr_len);
+          arm_wt_f32_zero(instance->buf[2 * i + 1], curr_len);
      }
 
      for (size_t i = 0; i < instance->n_dec; ++i)
@@ -59,12 +64,54 @@ arm_fwt_status arm_fwt_f32_init(arm_fwt_f32_instance* instance)
      instance->out[instance->n_dec] = instance->buf[2 * instance->n_dec - 1] + instance->offset;
      instance->lens[instance->n_dec] = instance->lens[instance->n_dec - 1];
 
-     arm_fwt_f32_zero(instance->in, instance->n_len + instance->offset);
+     arm_wt_f32_zero(instance->in, instance->n_len + instance->offset);
 
-     return FWT_STATUS_SUCCESS;
+     return WT_STATUS_SUCCESS;
 }
 
-void arm_fwt_f32_free(arm_fwt_f32_instance* instance)
+arm_wt_status arm_cwt_f32_init(arm_wt_f32_instance* instance)
+{
+     if (!instance->n_len) return WT_WRONG_NLEN;
+     if (!instance->c_len) return WT_WRONG_CLEN;
+
+     if (!instance->c || !instance->b) return WT_WRONG_CPTR;
+
+     instance->offset = instance->c_len - 1;
+     instance->dec = 1;
+
+     const size_t curr_len = (instance->n_len + instance->offset);
+
+     instance->buf = malloc((instance->n_dec * 2) * sizeof(float32_t*));
+     instance->out = malloc((instance->n_dec + 1) * sizeof(float32_t*));
+
+     instance->lens = malloc((instance->n_dec + 1) * sizeof(size_t));
+
+     instance->in = malloc(curr_len * sizeof(float32_t));
+
+     for (size_t i = 0; i < instance->n_dec; ++i)
+     {
+          instance->buf[2 * i] = malloc(curr_len * sizeof(float32_t));
+          instance->buf[2 * i + 1] = malloc(curr_len * sizeof(float32_t));
+
+          arm_wt_f32_zero(instance->buf[2 * i], curr_len);
+          arm_wt_f32_zero(instance->buf[2 * i + 1], curr_len);
+     }
+
+     for (size_t i = 0; i < instance->n_dec; ++i)
+     {
+          instance->out[i] = instance->buf[2 * i] + instance->offset;
+          instance->lens[i] = instance->n_len;
+     }
+
+     instance->out[instance->n_dec] = instance->buf[2 * instance->n_dec - 1] + instance->offset;
+     instance->lens[instance->n_dec] = instance->lens[instance->n_dec - 1];
+
+     arm_wt_f32_zero(instance->in, instance->n_len + instance->offset);
+
+     return WT_STATUS_SUCCESS;
+}
+
+void arm_wt_f32_free(arm_wt_f32_instance* instance)
 {
      for (int32_t i = instance->n_dec * 2 - 1; i >= 0; --i)
      {
@@ -77,55 +124,57 @@ void arm_fwt_f32_free(arm_fwt_f32_instance* instance)
      free(instance->buf);
 }
 
-void arm_fwt_f32_run(
-  arm_fwt_f32_instance* restrict instance,
+void arm_wt_f32_run(
+  arm_wt_f32_instance* restrict instance,
   const uint32_t* restrict in)
 {
-     arm_fwt_f32_copy(
+     arm_wt_f32_copy(
        instance->in + instance->n_len,
        instance->in,
        instance->offset);
 
-     arm_fwt_f32_scale(
+     arm_wt_f32_scale(
        in,
        instance->in + instance->offset,
        instance->n_len,
        instance->scale,
        instance->shift);
 
-     if (instance->n_dec > 1) arm_fwt_f32_copy(
+     if (instance->n_dec > 1) arm_wt_f32_copy(
        instance->buf[1] + instance->lens[0],
        instance->buf[1],
        instance->offset);
 
-     arm_fwt_f32_firdec(
+     arm_wt_f32_firdec(
        instance->in,
        instance->buf[1] + instance->offset,
        instance->buf[0] + instance->offset,
        instance->n_len,
        instance->c,
        instance->b,
-       instance->c_len);
+       instance->c_len,
+       instance->dec);
 
      for (size_t i = 1; i < instance->n_dec; ++i)
      {
-          if (i + 1 != instance->n_dec) arm_fwt_f32_copy(
+          if (i + 1 != instance->n_dec) arm_wt_f32_copy(
             instance->buf[2 * i + 1] + instance->lens[i],
             instance->buf[2 * i + 1],
             instance->offset);
 
-          arm_fwt_f32_firdec(
+          arm_wt_f32_firdec(
             instance->buf[2 * i - 1],
             instance->buf[2 * i + 1] + instance->offset,
             instance->buf[2 * i] + instance->offset,
             instance->lens[i - 1],
             instance->c,
             instance->b,
-            instance->c_len);
+            instance->c_len,
+            instance->dec);
      }
 }
 
-void arm_fwt_f32_scale(
+void arm_wt_f32_scale(
   const uint32_t* restrict in,
   float32_t* restrict out,
   const size_t len,
@@ -151,24 +200,25 @@ void arm_fwt_f32_scale(
      }
 }
 
-void arm_fwt_f32_firdec(
+void arm_wt_f32_firdec(
   const float32_t* restrict in,
   float32_t* restrict out_lp,
   float32_t* restrict out_hp,
   const size_t n_len,
   const float32_t* restrict c,
   const float32_t* restrict b,
-  const size_t c_len)
+  const size_t c_len,
+  const size_t inc)
 {
-     for (size_t i = 0; i < n_len; i += 2)
+     for (size_t i = 0; i < n_len; i += inc)
      {
           const float32_t* restrict ip = in + i;
 
           const float32_t* restrict cp = c;
           const float32_t* restrict bp = b;
 
-          float32_t acc_hp = 0.0f;
           float32_t acc_lp = 0.0f;
+          float32_t acc_hp = 0.0f;
 
           size_t blk = c_len >> 2;
           size_t rem = c_len & 3;
@@ -194,12 +244,12 @@ void arm_fwt_f32_firdec(
                acc_hp += *bp++ * *ip++;
           }
 
-          *out_hp++ = acc_hp * INV_SQRT2;
-          *out_lp++ = acc_lp * INV_SQRT2;
+          *out_lp++ = acc_lp;
+          *out_hp++ = acc_hp;
      }
 }
 
-void arm_fwt_f32_copy(
+void arm_wt_f32_copy(
   const float32_t* restrict scr,
   float32_t* restrict dst,
   const size_t len)
@@ -221,7 +271,7 @@ void arm_fwt_f32_copy(
      }
 }
 
-void arm_fwt_f32_zero(
+void arm_wt_f32_zero(
   float32_t* restrict dst,
   const size_t len)
 {
@@ -239,5 +289,50 @@ void arm_fwt_f32_zero(
      while (rem--)
      {
           *dst++ = 0.0f;
+     }
+}
+
+void arm_wt_f32_mallat(
+  const float32_t* restrict in,
+  float32_t* restrict out,
+  size_t n_len,
+  size_t n_dec,
+  const float32_t* restrict c,
+  const float32_t* restrict b,
+  const size_t c_len)
+{
+     float32_t
+       tmp_a[n_len / 2 + c_len],
+       tmp_b[n_len / 2 + c_len];
+
+     const float32_t* restrict _in = in;
+     float32_t* restrict _out = tmp_a;
+
+     while (n_dec--)
+     {
+          const size_t nlen_p2 = n_len >> 1;
+
+          if (!n_dec)
+          {
+               arm_wt_f32_firdec(_in, out, out + nlen_p2, n_len, c, b, c_len, 2);
+          }
+          else
+          {
+               arm_wt_f32_firdec(_in, _out, out + nlen_p2, n_len, c, b, c_len, 2);
+               arm_wt_f32_copy(_out, _out + nlen_p2, c_len);
+          }
+
+          if (_out == tmp_a)
+          {
+               _out = tmp_b;
+               _in = tmp_a;
+          }
+          else
+          {
+               _out = tmp_a;
+               _in = tmp_b;
+          }
+
+          n_len = nlen_p2;
      }
 }

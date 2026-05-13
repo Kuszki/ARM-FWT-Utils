@@ -20,7 +20,7 @@
 
 #include "mat_helper.h"
 #include "hdf_helper.h"
-#include "fwt_mallat.h"
+#include "arm_mal_f32.h"
 
 int main(int argc, char* argv[])
 {
