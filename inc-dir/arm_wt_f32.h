@@ -34,7 +34,7 @@ typedef enum
 {
 
      WT_STATUS_SUCCESS, //!< Everything is fine
-     WT_STATUS_ERROR, //!< Other error occured
+     WT_STATUS_ERROR, //!< Other error occurred
 
      WT_WRONG_NLEN, //!< Data length not set - check arm_wt_f32_instance::n_len
      WT_WRONG_CLEN, //!< Coefs length not set - check arm_wt_f32_instance::c_len
@@ -47,7 +47,7 @@ typedef enum
  * @brief Wavelet transform object.
  * @see arm_fwt_f32_init, arm_cwt_f32_init, arm_wt_f32_free, arm_wt_f32_run
  *
- * This struct holds the WT algorithm parameters and internal buffers used in data processing.
+ * This structure holds the WT algorithm parameters and internal buffers used in data processing.
  *
  * Wavelet Transform instance is prepared to use with raw uint32_t ADC outputs. Data in question
  * is scaled and shifted calling arm_wt_f32_run. This algorithm is designed to run in cycle,
@@ -64,7 +64,7 @@ typedef enum
  * - arm_wt_f32_instance::c_len - number of FIR taps (length of c must be equal length of b)
  *
  * To init decimated (FWT) version you need to run arm_fwt_f32_init, where arm_cwt_f32_init
- * setup the undedcimated (UFWT or CWT) version of algorithm.
+ * setup the undecimated (UFWT or CWT) version of algorithm.
  *
  * Fields set up after calling constructor are:
  * - arm_wt_f32_instance::out - pointer to n_dec+1 vectors containing usable output values
@@ -103,7 +103,7 @@ typedef struct
 
 /**
  * @brief Constructor of arm_wt_f32_instance in case of FWT
- * @param instance [in,out] Filled arm_wt_f32_instance struct
+ * @param instance [in,out] Filled arm_wt_f32_instance structure
  * @return Error code or arm_wt_status::WT_STATUS_SUCCESS
  * @see arm_wt_f32_instance, arm_wt_status
  *
@@ -111,7 +111,7 @@ typedef struct
  * in arm_wt_f32_instance must be filled before running this function.
  *
  * In case of FWT output values stored at arm_wt_f32_instance::out consists of N = n_dec+1 elements
- * containing various number of output coeficients. Check arm_wt_f32_instance::lens to determine
+ * containing various number of output coefficients. Check arm_wt_f32_instance::lens to determine
  * n-th output vector length.
  *
  */
@@ -127,7 +127,7 @@ arm_wt_status arm_fwt_f32_init(arm_wt_f32_instance* instance);
  * in arm_wt_f32_instance must be filled before running this function.
  *
  * In case of CWT output values stored at arm_wt_f32_instance::out consists of N = n_dec+1 elements
- * containing the same number of output coeficients equal to arm_wt_f32_instance::n_len. To enable
+ * containing the same number of output coefficients equal to arm_wt_f32_instance::n_len. To enable
  * compatibility arm_wt_f32_instance::lens still can be used to determine n-th output vector length.
  *
  */
@@ -146,7 +146,7 @@ void arm_wt_f32_free(arm_wt_f32_instance* instance);
 /**
  * @brief Perform WT algorithm for given input data.
  * @param instance [in,out] Instance of arm_wt_f32_instance to use
- * @param in [in] Pointer to ADC resoults buffer
+ * @param in [in] Pointer to ADC results buffer
  * @see arm_wt_f32_instance, arm_fwt_f32_init, arm_cwt_f32_init
  *
  * This function performs single run of WT algorithm using given instance and input data.
@@ -185,7 +185,7 @@ void arm_wt_f32_scale(
  * @param dst [out] Destination data pointer
  * @param len [in] Number of elements to copy
  *
- * This function performs float32_t -> float32_t copy withot any changes. Input and output buffers
+ * This function performs float32_t -> float32_t copy without any changes. Input and output buffers
  * must be length of at least len. This function unroll loop using 4 operations per iteration.
  *
  */
@@ -213,12 +213,12 @@ void arm_wt_f32_zero(
  * @param out_lp [out] Output data pointer for low-pass coefficients
  * @param out_hp [out] Output data pointer for high-pass coefficients
  * @param n_len [in] Number of input data items
- * @param c [in] Pointer to low-pass FIR coeficients
- * @param b [in] Pointer to high-pass FIR coeficients
- * @param c_len [in] Number FIR coeficients
+ * @param c [in] Pointer to low-pass FIR coefficients
+ * @param b [in] Pointer to high-pass FIR coefficients
+ * @param c_len [in] Number FIR coefficients
  * @param inc [in] Decimation factor (number of elements to skip per output value)
  *
- * This function perform parallel input signal decomposition using given FIR coeficients. The length
+ * This function perform parallel input signal decomposition using given FIR coefficients. The length
  * of out_lp and out_hp must be at least n_len / inc. The length of c and b must be the same and equal
  * to c_len. The actual length of in must be n_len+c_len-1 where the first c_len-1 elements contains
  * previous input values (equivalent to given boundary conditions).
@@ -240,11 +240,11 @@ void arm_wt_f32_firdec(
  * @param out [out] Output coefficients pointer
  * @param n_len [in] Number of input data items
  * @param n_dec [in] Number of decomposition iterations
- * @param c [in] Pointer to low-pass FIR coeficients
- * @param b [in] Pointer to high-pass FIR coeficients
- * @param c_len [in] Number FIR coeficients
+ * @param c [in] Pointer to low-pass FIR coefficients
+ * @param b [in] Pointer to high-pass FIR coefficients
+ * @param c_len [in] Number FIR coefficients
  *
- * This function perform parallel input signal decomposition using given FIR coeficients. Decomposition
+ * This function perform parallel input signal decomposition using given FIR coefficients. Decomposition
  * is repeated n_dec times, where input of next level is low-pass output from previous level. The length
  * of out_lp and out_hp must be at least n_len / inc. The length of c and b must be the same and equal
  * to c_len. The actual length of in must be n_len+c_len-1 where the last c_len-1 elements contains
