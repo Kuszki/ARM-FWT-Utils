@@ -19,11 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "arm_wt_f32.h"
-#include "arm_math_types.h"
 
 #include <stdlib.h>
-
-static const float32_t INV_SQRT2 = 0.7071067811865475f;
 
 arm_wt_status arm_fwt_f32_init(arm_wt_f32_instance* instance)
 {
@@ -32,7 +29,7 @@ arm_wt_status arm_fwt_f32_init(arm_wt_f32_instance* instance)
 
      if (!instance->c || !instance->b) return WT_WRONG_CPTR;
 
-     if (!(instance->n_len >> instance->n_dec)) return WT_WRONG_NDEC;
+     if ((instance->n_len >> (instance->n_dec - 1)) < instance->c_len) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
      instance->dec = 2;
@@ -75,6 +72,8 @@ arm_wt_status arm_cwt_f32_init(arm_wt_f32_instance* instance)
      if (!instance->c_len) return WT_WRONG_CLEN;
 
      if (!instance->c || !instance->b) return WT_WRONG_CPTR;
+
+     if (instance->n_len < instance->c_len) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
      instance->dec = 1;
@@ -140,7 +139,7 @@ void arm_wt_f32_run(
        instance->scale,
        instance->shift);
 
-     if (instance->n_dec > 1) arm_wt_f32_copy(
+     arm_wt_f32_copy(
        instance->buf[1] + instance->lens[0],
        instance->buf[1],
        instance->offset);
@@ -157,7 +156,7 @@ void arm_wt_f32_run(
 
      for (size_t i = 1; i < instance->n_dec; ++i)
      {
-          if (i + 1 != instance->n_dec) arm_wt_f32_copy(
+          arm_wt_f32_copy(
             instance->buf[2 * i + 1] + instance->lens[i],
             instance->buf[2 * i + 1],
             instance->offset);
@@ -181,8 +180,6 @@ void arm_wt_f32_scale(
   const float32_t scale,
   const float32_t shift)
 {
-     const uint32_t* start = in;
-
      size_t blk = len >> 2;
      size_t rem = len & 3;
 
