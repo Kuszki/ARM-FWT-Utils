@@ -1,6 +1,6 @@
 # ARM-FWT-Utils
 
-A few implementations of `DWT` algorithm using `CMSIS-DSP` library for `ARM`.
+Standalone implementation of `FFT` algorithm compatible with `CMSIS-DSP` library.
 
 ## Purpose
 
