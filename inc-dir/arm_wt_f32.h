@@ -49,7 +49,7 @@ typedef enum
  *
  * This structure holds the WT algorithm parameters and internal buffers used in data processing.
  *
- * Wavelet Transform instance is prepared to use with raw uint32_t ADC outputs. Data in question
+ * Wavelet Transform instance is prepared to use with raw uint16_t ADC outputs. Data in question
  * is scaled and shifted calling arm_wt_f32_run. This algorithm is designed to run in cycle,
  * between subsequent ADC interrupts signed after conversion of N samples is done.
  *
@@ -157,23 +157,23 @@ void arm_wt_f32_free(arm_wt_f32_instance* instance);
  */
 void arm_wt_f32_run(
   arm_wt_f32_instance* restrict instance,
-  const uint32_t* restrict in);
+  const uint16_t* restrict in);
 
 /**
- * @brief Perform uint32_t -> float32_t conversion with scale and shift
+ * @brief Perform uint16_t -> float32_t conversion with scale and shift
  * @param in [in] Input data pointer
  * @param out [out] Output data pointer
  * @param len [in] Number of elements to convert
  * @param scale [in] Scale factor
  * @param shift [in] Shift value
  *
- * This function performs uint32_t -> float32_t conversion with scale and shift according
+ * This function performs uint16_t -> float32_t conversion with scale and shift according
  * to formula out = scale * in + shift. Input and output buffers must be length of at least
  * len. This function unroll loop using 4 MAC operations per iteration.
  *
  */
 void arm_wt_f32_scale(
-  const uint32_t* restrict in,
+  const uint16_t* restrict in,
   float32_t* restrict out,
   const size_t len,
   const float32_t scale,
@@ -181,7 +181,7 @@ void arm_wt_f32_scale(
 
 /**
  * @brief Copy float32_t from source to destination without any changes
- * @param scr [in] Source data pointer
+ * @param src [in] Source data pointer
  * @param dst [out] Destination data pointer
  * @param len [in] Number of elements to copy
  *
@@ -206,6 +206,31 @@ void arm_wt_f32_copy(
 void arm_wt_f32_zero(
   float32_t* restrict dst,
   const size_t len);
+
+/**
+ * @brief Perform FIR operation
+ * @param in [in] Input data pointer
+ * @param out_lp [out] Output data pointer for low-pass coefficients
+ * @param out_hp [out] Output data pointer for high-pass coefficients
+ * @param n_len [in] Number of input data items
+ * @param c [in] Pointer to low-pass FIR coefficients
+ * @param b [in] Pointer to high-pass FIR coefficients
+ * @param c_len [in] Number FIR coefficients
+ *
+ * This function perform parallel input signal decomposition using given FIR coefficients. The length
+ * of out_lp and out_hp must be at least n_len. The length of c and b must be the same and equal
+ * to c_len. The actual length of in must be n_len+c_len-1 where the first c_len-1 elements contains
+ * previous input values (equivalent to given boundary conditions).
+ *
+ */
+void arm_wt_f32_fir(
+  const float32_t* restrict in,
+  float32_t* restrict out_lp,
+  float32_t* restrict out_hp,
+  const size_t n_len,
+  const float32_t* restrict c,
+  const float32_t* restrict b,
+  const size_t c_len);
 
 /**
  * @brief Perform FIR with optional decimation

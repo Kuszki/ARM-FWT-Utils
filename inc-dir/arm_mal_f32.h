@@ -18,11 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifdef ARM_MATH_CM4
-#include "stm32f4xx.h"
-#endif
-
-#include "arm_math.h"
+#include "arm_math_types.h"
 
 int fwt_gen_b(
   const float32_t* restrict c,
@@ -80,13 +76,13 @@ int fwt_fir_dec_ext_par(
   const size_t NC);
 
 int fwt_adc_scale(
-  const uint32_t* restrict in,
+  const uint16_t* restrict in,
   float32_t* restrict out,
   const size_t N,
   const float32_t scale);
 
 int fwt_adc_scale_ext(
-  const uint32_t* restrict in,
+  const uint16_t* restrict in,
   float32_t* restrict out,
   const size_t N,
   const size_t NC,

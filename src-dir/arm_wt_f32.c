@@ -125,7 +125,7 @@ void arm_wt_f32_free(arm_wt_f32_instance* instance)
 
 void arm_wt_f32_run(
   arm_wt_f32_instance* restrict instance,
-  const uint32_t* restrict in)
+  const uint16_t* restrict in)
 {
      arm_wt_f32_copy(
        instance->in + instance->n_len,
@@ -139,12 +139,12 @@ void arm_wt_f32_run(
        instance->scale,
        instance->shift);
 
-     arm_wt_f32_copy(
+     if (instance->n_dec > 1) arm_wt_f32_copy(
        instance->buf[1] + instance->lens[0],
        instance->buf[1],
        instance->offset);
 
-     arm_wt_f32_firdec(
+     if (instance->dec > 1) arm_wt_f32_firdec(
        instance->in,
        instance->buf[1] + instance->offset,
        instance->buf[0] + instance->offset,
@@ -153,15 +153,23 @@ void arm_wt_f32_run(
        instance->b,
        instance->c_len,
        instance->dec);
+     else arm_wt_f32_fir(
+       instance->in,
+       instance->buf[1] + instance->offset,
+       instance->buf[0] + instance->offset,
+       instance->n_len,
+       instance->c,
+       instance->b,
+       instance->c_len);
 
      for (size_t i = 1; i < instance->n_dec; ++i)
      {
-          arm_wt_f32_copy(
+          if (i + 1 != instance->n_dec) arm_wt_f32_copy(
             instance->buf[2 * i + 1] + instance->lens[i],
             instance->buf[2 * i + 1],
             instance->offset);
 
-          arm_wt_f32_firdec(
+          if (instance->dec > 1) arm_wt_f32_firdec(
             instance->buf[2 * i - 1],
             instance->buf[2 * i + 1] + instance->offset,
             instance->buf[2 * i] + instance->offset,
@@ -170,21 +178,33 @@ void arm_wt_f32_run(
             instance->b,
             instance->c_len,
             instance->dec);
+          else arm_wt_f32_fir(
+            instance->buf[2 * i - 1],
+            instance->buf[2 * i + 1] + instance->offset,
+            instance->buf[2 * i] + instance->offset,
+            instance->lens[i - 1],
+            instance->c,
+            instance->b,
+            instance->c_len);
      }
 }
 
 void arm_wt_f32_scale(
-  const uint32_t* restrict in,
+  const uint16_t* restrict in,
   float32_t* restrict out,
   const size_t len,
   const float32_t scale,
   const float32_t shift)
 {
-     size_t blk = len >> 2;
-     size_t rem = len & 3;
+     size_t blk = len >> 3;
+     size_t rem = len & 7;
 
      while (blk--)
      {
+          *out++ = *in++ * scale + shift;
+          *out++ = *in++ * scale + shift;
+          *out++ = *in++ * scale + shift;
+          *out++ = *in++ * scale + shift;
           *out++ = *in++ * scale + shift;
           *out++ = *in++ * scale + shift;
           *out++ = *in++ * scale + shift;
@@ -207,47 +227,474 @@ void arm_wt_f32_firdec(
   const size_t c_len,
   const size_t inc)
 {
-     for (size_t i = 0; i < n_len; i += inc)
+     const float32_t* restrict cp;
+     const float32_t* restrict bp;
+
+     const float32_t* restrict ip0;
+     const float32_t* restrict ip1;
+     const float32_t* restrict ip2;
+     const float32_t* restrict ip3;
+
+     float32_t al0, al1, al2, al3;
+     float32_t ah0, ah1, ah2, ah3;
+
+     float32_t x0, x1, x2, x3;
+     float32_t c0, b0;
+
+     size_t cnt_a, cnt_b;
+
+     cnt_a = (n_len / inc) >> 2;
+
+     while (cnt_a > 0)
      {
-          const float32_t* restrict ip = in + i;
+          cp = c;
+          bp = b;
 
-          const float32_t* restrict cp = c;
-          const float32_t* restrict bp = b;
+          ip0 = in;
+          ip1 = ip0 + inc;
+          ip2 = ip1 + inc;
+          ip3 = ip2 + inc;
 
-          float32_t acc_lp = 0.0f;
-          float32_t acc_hp = 0.0f;
+          al0 = 0.0f;
+          al1 = 0.0f;
+          al2 = 0.0f;
+          al3 = 0.0f;
 
-          size_t blk = c_len >> 2;
-          size_t rem = c_len & 3;
+          ah0 = 0.0f;
+          ah1 = 0.0f;
+          ah2 = 0.0f;
+          ah3 = 0.0f;
 
-          while (blk--)
+          cnt_b = c_len >> 2;
+
+          while (cnt_b > 0)
           {
-               acc_lp += *cp++ * *ip;
-               acc_hp += *bp++ * *ip++;
+               c0 = *cp++;
+               b0 = *bp++;
 
-               acc_lp += *cp++ * *ip;
-               acc_hp += *bp++ * *ip++;
+               x0 = *ip0++;
+               x1 = *ip1++;
+               x2 = *ip2++;
+               x3 = *ip3++;
 
-               acc_lp += *cp++ * *ip;
-               acc_hp += *bp++ * *ip++;
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
 
-               acc_lp += *cp++ * *ip;
-               acc_hp += *bp++ * *ip++;
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
+
+               c0 = *cp++;
+               b0 = *bp++;
+
+               x0 = *ip0++;
+               x1 = *ip1++;
+               x2 = *ip2++;
+               x3 = *ip3++;
+
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
+
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
+
+               c0 = *cp++;
+               b0 = *bp++;
+
+               x0 = *ip0++;
+               x1 = *ip1++;
+               x2 = *ip2++;
+               x3 = *ip3++;
+
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
+
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
+
+               c0 = *cp++;
+               b0 = *bp++;
+
+               x0 = *ip0++;
+               x1 = *ip1++;
+               x2 = *ip2++;
+               x3 = *ip3++;
+
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
+
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
+
+               cnt_b--;
           }
 
-          while (rem--)
+          cnt_b = c_len & 3;
+
+          while (cnt_b > 0)
           {
-               acc_lp += *cp++ * *ip;
-               acc_hp += *bp++ * *ip++;
+               c0 = *cp++;
+               b0 = *bp++;
+
+               x0 = *ip0++;
+               x1 = *ip1++;
+               x2 = *ip2++;
+               x3 = *ip3++;
+
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
+
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
+
+               cnt_b--;
           }
 
-          *out_lp++ = acc_lp;
-          *out_hp++ = acc_hp;
+          *out_lp++ = al0;
+          *out_lp++ = al1;
+          *out_lp++ = al2;
+          *out_lp++ = al3;
+
+          *out_hp++ = ah0;
+          *out_hp++ = ah1;
+          *out_hp++ = ah2;
+          *out_hp++ = ah3;
+
+          in += 4 * inc;
+
+          cnt_a--;
+     }
+
+     cnt_a = (n_len / inc) & 3;
+
+     while (cnt_a > 0)
+     {
+          cp = c;
+          bp = b;
+
+          ip0 = in;
+
+          al0 = 0.0f;
+          ah0 = 0.0f;
+
+          cnt_b = c_len >> 2;
+
+          while (cnt_b > 0)
+          {
+               x0 = *ip0++;
+               x1 = *ip0++;
+               x2 = *ip0++;
+               x3 = *ip0++;
+
+               al0 += *cp++ * x0;
+               al0 += *cp++ * x1;
+               al0 += *cp++ * x2;
+               al0 += *cp++ * x3;
+
+               ah0 += *bp++ * x0;
+               ah0 += *bp++ * x1;
+               ah0 += *bp++ * x2;
+               ah0 += *bp++ * x3;
+
+               cnt_b--;
+          }
+
+          cnt_b = c_len & 3;
+
+          while (cnt_b > 0)
+          {
+               x0 = *ip0++;
+
+               al0 += *cp++ * x0;
+               ah0 += *bp++ * x0;
+
+               cnt_b--;
+          }
+
+          *out_lp++ = al0;
+          *out_hp++ = ah0;
+
+          in += inc;
+
+          cnt_a--;
+     }
+}
+
+void arm_wt_f32_fir(
+  const float32_t* restrict in,
+  float32_t* restrict out_lp,
+  float32_t* restrict out_hp,
+  const size_t n_len,
+  const float32_t* restrict c,
+  const float32_t* restrict b,
+  const size_t c_len)
+{
+     const float32_t* restrict ip;
+     const float32_t* restrict cp;
+     const float32_t* restrict bp;
+
+     float32_t al0, al1, al2, al3;
+     float32_t ah0, ah1, ah2, ah3;
+
+     float32_t pl0, pl1, pl2, pl3;
+     float32_t ph0, ph1, ph2, ph3;
+
+     float32_t x0, x1, x2, x3;
+     float32_t c0, b0;
+
+     size_t cnt_a, cnt_b;
+
+     cnt_a = n_len >> 2;
+
+     while (cnt_a > 0)
+     {
+          ip = in;
+          cp = c;
+          bp = b;
+
+          al0 = 0.0f;
+          al1 = 0.0f;
+          al2 = 0.0f;
+          al3 = 0.0f;
+
+          ah0 = 0.0f;
+          ah1 = 0.0f;
+          ah2 = 0.0f;
+          ah3 = 0.0f;
+
+          x0 = *ip++;
+          x1 = *ip++;
+          x2 = *ip++;
+
+          cnt_b = c_len >> 2;
+
+          while (cnt_b > 0)
+          {
+               c0 = *cp++;
+               b0 = *bp++;
+               x3 = *ip++;
+
+               pl0 = x0 * c0;
+               pl1 = x1 * c0;
+               pl2 = x2 * c0;
+               pl3 = x3 * c0;
+
+               ph0 = x0 * b0;
+               ph1 = x1 * b0;
+               ph2 = x2 * b0;
+               ph3 = x3 * b0;
+
+               al0 += pl0;
+               al1 += pl1;
+               al2 += pl2;
+               al3 += pl3;
+
+               ah0 += ph0;
+               ah1 += ph1;
+               ah2 += ph2;
+               ah3 += ph3;
+
+               c0 = *cp++;
+               b0 = *bp++;
+               x0 = *ip++;
+
+               pl0 = x1 * c0;
+               pl1 = x2 * c0;
+               pl2 = x3 * c0;
+               pl3 = x0 * c0;
+
+               ph0 = x1 * b0;
+               ph1 = x2 * b0;
+               ph2 = x3 * b0;
+               ph3 = x0 * b0;
+
+               al0 += pl0;
+               al1 += pl1;
+               al2 += pl2;
+               al3 += pl3;
+
+               ah0 += ph0;
+               ah1 += ph1;
+               ah2 += ph2;
+               ah3 += ph3;
+
+               c0 = *cp++;
+               b0 = *bp++;
+               x1 = *ip++;
+
+               pl0 = x2 * c0;
+               pl1 = x3 * c0;
+               pl2 = x0 * c0;
+               pl3 = x1 * c0;
+
+               ph0 = x2 * b0;
+               ph1 = x3 * b0;
+               ph2 = x0 * b0;
+               ph3 = x1 * b0;
+
+               al0 += pl0;
+               al1 += pl1;
+               al2 += pl2;
+               al3 += pl3;
+
+               ah0 += ph0;
+               ah1 += ph1;
+               ah2 += ph2;
+               ah3 += ph3;
+
+               c0 = *cp++;
+               b0 = *bp++;
+               x2 = *ip++;
+
+               pl0 = x3 * c0;
+               pl1 = x0 * c0;
+               pl2 = x1 * c0;
+               pl3 = x2 * c0;
+
+               ph0 = x3 * b0;
+               ph1 = x0 * b0;
+               ph2 = x1 * b0;
+               ph3 = x2 * b0;
+
+               al0 += pl0;
+               al1 += pl1;
+               al2 += pl2;
+               al3 += pl3;
+
+               ah0 += ph0;
+               ah1 += ph1;
+               ah2 += ph2;
+               ah3 += ph3;
+
+               cnt_b--;
+          }
+
+          cnt_b = c_len & 3;
+
+          while (cnt_b > 0)
+          {
+               c0 = *cp++;
+               b0 = *bp++;
+               x3 = *ip++;
+
+               pl0 = x0 * c0;
+               pl1 = x1 * c0;
+               pl2 = x2 * c0;
+               pl3 = x3 * c0;
+
+               ph0 = x0 * b0;
+               ph1 = x1 * b0;
+               ph2 = x2 * b0;
+               ph3 = x3 * b0;
+
+               al0 += pl0;
+               al1 += pl1;
+               al2 += pl2;
+               al3 += pl3;
+
+               ah0 += ph0;
+               ah1 += ph1;
+               ah2 += ph2;
+               ah3 += ph3;
+
+               x0 = x1;
+               x1 = x2;
+               x2 = x3;
+
+               cnt_b--;
+          }
+
+          *out_lp++ = al0;
+          *out_lp++ = al1;
+          *out_lp++ = al2;
+          *out_lp++ = al3;
+
+          *out_hp++ = ah0;
+          *out_hp++ = ah1;
+          *out_hp++ = ah2;
+          *out_hp++ = ah3;
+
+          in += 4;
+
+          cnt_a--;
+     }
+
+     cnt_a = n_len & 3;
+
+     while (cnt_a > 0)
+     {
+          cp = c;
+          bp = b;
+
+          ip = in;
+
+          al0 = 0.0f;
+          ah0 = 0.0f;
+
+          cnt_b = c_len >> 2;
+
+          while (cnt_b > 0)
+          {
+               x0 = *ip++;
+               x1 = *ip++;
+               x2 = *ip++;
+               x3 = *ip++;
+
+               al0 += *cp++ * x0;
+               al0 += *cp++ * x1;
+               al0 += *cp++ * x2;
+               al0 += *cp++ * x3;
+
+               ah0 += *bp++ * x0;
+               ah0 += *bp++ * x1;
+               ah0 += *bp++ * x2;
+               ah0 += *bp++ * x3;
+
+               cnt_b--;
+          }
+
+          cnt_b = c_len & 3;
+
+          while (cnt_b > 0)
+          {
+               x0 = *ip++;
+
+               al0 += *cp++ * x0;
+               ah0 += *bp++ * x0;
+
+               cnt_b--;
+          }
+
+          *out_lp++ = al0;
+          *out_hp++ = ah0;
+
+          in += 1;
+
+          cnt_a--;
      }
 }
 
 void arm_wt_f32_copy(
-  const float32_t* restrict scr,
+  const float32_t* restrict src,
   float32_t* restrict dst,
   const size_t len)
 {
@@ -256,15 +703,15 @@ void arm_wt_f32_copy(
 
      while (blk--)
      {
-          *dst++ = *scr++;
-          *dst++ = *scr++;
-          *dst++ = *scr++;
-          *dst++ = *scr++;
+          *dst++ = *src++;
+          *dst++ = *src++;
+          *dst++ = *src++;
+          *dst++ = *src++;
      }
 
      while (rem--)
      {
-          *dst++ = *scr++;
+          *dst++ = *src++;
      }
 }
 

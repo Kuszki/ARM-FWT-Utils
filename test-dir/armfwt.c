@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
      const size_t N = MAX(mX.rows, mX.cols);
      const size_t NC = MAX(mC.rows, mC.cols);
 
-     uint32_t in_u[N];
+     uint16_t in_u[N];
 
      for (size_t i = 0; i < N; ++i) in_u[i] = mX.data[i];
 

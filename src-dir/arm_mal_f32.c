@@ -96,7 +96,7 @@ int fwt_malat_ext(
           else
           {
                fwt_fir_dec_ext(_in, _out, len, c, clen);
-               arm_copy_f32(_out, _out + len / 2, clen);
+               memcpy(_out + len / 2, _out, clen * sizeof(float32_t));
           }
 
           if (_out == tmp_a)
@@ -136,7 +136,7 @@ int fwt_malat_ext_par(
           else
           {
                fwt_fir_dec_ext_par(_in, _out, out + len / 2, len, c, b, clen);
-               arm_copy_f32(_out, _out + len / 2, clen);
+               memcpy(_out + len / 2, _out, clen * sizeof(float32_t));
           }
 
           if (_out == tmp_a)
@@ -542,7 +542,7 @@ int fwt_fir_dec_G(
 }
 
 int fwt_adc_scale(
-  const uint32_t* in,
+  const uint16_t* in,
   float32_t* out,
   const size_t N,
   const float32_t scale)
@@ -567,13 +567,13 @@ int fwt_adc_scale(
 }
 
 int fwt_adc_scale_ext(
-  const uint32_t* in,
+  const uint16_t* in,
   float32_t* out,
   const size_t N,
   const size_t NC,
   const float32_t scale)
 {
-     const uint32_t* start = in;
+     const uint16_t* start = in;
 
      size_t blk = N >> 2;
      size_t rem = N & 3;

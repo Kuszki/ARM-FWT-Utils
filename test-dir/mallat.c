@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 
      bool ok3 = mat_compare_epsilon(mY.data, out, N, 1e-6);
 
-     printf("fwt_malat_ext_par: %s", ok2 ? "OK" : "FAIL");
+     printf("fwt_malat_ext_par: %s", ok3 ? "OK" : "FAIL");
 
      memset(out, 0, N * sizeof(float32_t));
 
@@ -107,9 +107,9 @@ int main(int argc, char* argv[])
 
      bool ok4 = mat_compare_epsilon(mY.data, out, N, 1e-6);
 
-     printf("fwt_malat_ext_par: %s", ok2 ? "OK" : "FAIL");
+     printf("arm_wt_f32_mallat: %s", ok4 ? "OK" : "FAIL");
 
-     uint32_t uint_in[N];
+     uint16_t uint_in[N];
      const float32_t scale = 0.696969f;
 
      for (size_t i = 0; i < N; ++i) uint_in[i] = i;

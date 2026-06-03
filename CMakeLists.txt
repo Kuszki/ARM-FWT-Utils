@@ -73,6 +73,9 @@ execute_process(
 execute_process(
 	COMMAND ${Octave_EXECUTABLE} gen_mallat.m
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+execute_process(
+	COMMAND ${Octave_EXECUTABLE} gen_firtest.m
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
 
 file(GLOB HDF_SAVED_VARIABLES "${PROJECT_SOURCE_DIR}/data-dir/*.hdf")
 file(COPY ${HDF_SAVED_VARIABLES} DESTINATION ${PROJECT_BINARY_DIR})
