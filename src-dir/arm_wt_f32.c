@@ -240,7 +240,7 @@ void arm_wt_f32_firdec(
 
      cnt_a = (n_len / inc) >> 2;
 
-     while (cnt_a > 0)
+     while (cnt_a)
      {
           cp = c;
           bp = b;
@@ -262,7 +262,7 @@ void arm_wt_f32_firdec(
 
           cnt_b = c_len >> 2;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                c0 = *cp++;
                b0 = *bp++;
@@ -336,12 +336,12 @@ void arm_wt_f32_firdec(
                ah2 += x2 * b0;
                ah3 += x3 * b0;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           cnt_b = c_len & 3;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                c0 = *cp++;
                b0 = *bp++;
@@ -361,7 +361,7 @@ void arm_wt_f32_firdec(
                ah2 += x2 * b0;
                ah3 += x3 * b0;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           *out_lp++ = al0;
@@ -376,12 +376,12 @@ void arm_wt_f32_firdec(
 
           in += 4 * inc;
 
-          cnt_a--;
+          cnt_a -= 1;
      }
 
      cnt_a = (n_len / inc) & 3;
 
-     while (cnt_a > 0)
+     while (cnt_a)
      {
           cp = c;
           bp = b;
@@ -393,7 +393,7 @@ void arm_wt_f32_firdec(
 
           cnt_b = c_len >> 2;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                x0 = *ip0++;
                x1 = *ip0++;
@@ -410,19 +410,19 @@ void arm_wt_f32_firdec(
                ah0 += *bp++ * x2;
                ah0 += *bp++ * x3;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           cnt_b = c_len & 3;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                x0 = *ip0++;
 
                al0 += *cp++ * x0;
                ah0 += *bp++ * x0;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           *out_lp++ = al0;
@@ -430,7 +430,7 @@ void arm_wt_f32_firdec(
 
           in += inc;
 
-          cnt_a--;
+          cnt_a -= 1;
      }
 }
 
@@ -455,7 +455,7 @@ void arm_wt_f32_fir(
 
      cnt_a = n_len >> 2;
 
-     while (cnt_a > 0)
+     while (cnt_a)
      {
           ip = in;
           cp = c;
@@ -477,7 +477,7 @@ void arm_wt_f32_fir(
 
           cnt_b = c_len >> 2;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                c0 = *cp++;
                b0 = *bp++;
@@ -535,12 +535,12 @@ void arm_wt_f32_fir(
                ah2 += x1 * b0;
                ah3 += x2 * b0;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           cnt_b = c_len & 3;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                c0 = *cp++;
                b0 = *bp++;
@@ -560,7 +560,7 @@ void arm_wt_f32_fir(
                x1 = x2;
                x2 = x3;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           *out_lp++ = al0;
@@ -575,12 +575,12 @@ void arm_wt_f32_fir(
 
           in += 4;
 
-          cnt_a--;
+          cnt_a -= 1;
      }
 
      cnt_a = n_len & 3;
 
-     while (cnt_a > 0)
+     while (cnt_a)
      {
           cp = c;
           bp = b;
@@ -592,7 +592,7 @@ void arm_wt_f32_fir(
 
           cnt_b = c_len >> 2;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                x0 = *ip++;
                x1 = *ip++;
@@ -609,19 +609,19 @@ void arm_wt_f32_fir(
                ah0 += *bp++ * x2;
                ah0 += *bp++ * x3;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           cnt_b = c_len & 3;
 
-          while (cnt_b > 0)
+          while (cnt_b)
           {
                x0 = *ip++;
 
                al0 += *cp++ * x0;
                ah0 += *bp++ * x0;
 
-               cnt_b--;
+               cnt_b -= 1;
           }
 
           *out_lp++ = al0;
@@ -629,7 +629,7 @@ void arm_wt_f32_fir(
 
           in += 1;
 
-          cnt_a--;
+          cnt_a -= 1;
      }
 }
 
@@ -694,16 +694,14 @@ void arm_wt_f32_mallat(
 
      while (n_dec--)
      {
-          const size_t nlen_p2 = n_len >> 1;
-
-          if (!n_dec)
+          if (n_dec)
           {
-               arm_wt_f32_firdec(_in, out, out + nlen_p2, n_len, c, b, c_len, 2);
+               arm_wt_f32_firdec(_in, _out, out + (n_len >> 1), n_len, c, b, c_len, 2);
+               arm_wt_f32_copy(_out, _out + (n_len >> 1), c_len);
           }
           else
           {
-               arm_wt_f32_firdec(_in, _out, out + nlen_p2, n_len, c, b, c_len, 2);
-               arm_wt_f32_copy(_out, _out + nlen_p2, c_len);
+               arm_wt_f32_firdec(_in, out, out + (n_len >> 1), n_len, c, b, c_len, 2);
           }
 
           if (_out == tmp_a)
@@ -717,6 +715,6 @@ void arm_wt_f32_mallat(
                _in = tmp_b;
           }
 
-          n_len = nlen_p2;
+          n_len = n_len >> 1;
      }
 }
