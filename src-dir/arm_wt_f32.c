@@ -685,23 +685,27 @@ void arm_wt_f32_mallat(
   const float32_t* restrict b,
   const size_t c_len)
 {
+     const size_t c_len_m1 = c_len - 1;
+
      float32_t
-       tmp_a[n_len / 2 + c_len],
-       tmp_b[n_len / 2 + c_len];
+       tmp_a[n_len / 2 + c_len_m1],
+       tmp_b[n_len / 2 + c_len_m1];
 
      const float32_t* restrict _in = in;
      float32_t* restrict _out = tmp_a;
 
      while (n_dec--)
      {
+          const size_t n_len_p2 = n_len >> 1;
+
           if (n_dec)
           {
-               arm_wt_f32_firdec(_in, _out, out + (n_len >> 1), n_len, c, b, c_len, 2);
-               arm_wt_f32_copy(_out, _out + (n_len >> 1), c_len);
+               arm_wt_f32_firdec(_in, _out, out + n_len_p2, n_len, c, b, c_len, 2);
+               arm_wt_f32_copy(_out, _out + n_len_p2, c_len_m1);
           }
           else
           {
-               arm_wt_f32_firdec(_in, out, out + (n_len >> 1), n_len, c, b, c_len, 2);
+               arm_wt_f32_firdec(_in, out, out + n_len_p2, n_len, c, b, c_len, 2);
           }
 
           if (_out == tmp_a)
@@ -715,6 +719,6 @@ void arm_wt_f32_mallat(
                _in = tmp_b;
           }
 
-          n_len = n_len >> 1;
+          n_len = n_len_p2;
      }
 }
