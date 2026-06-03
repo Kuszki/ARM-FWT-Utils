@@ -448,9 +448,6 @@ void arm_wt_f32_fir(
      float32_t al0, al1, al2, al3;
      float32_t ah0, ah1, ah2, ah3;
 
-     float32_t pl0, pl1, pl2, pl3;
-     float32_t ph0, ph1, ph2, ph3;
-
      float32_t x0, x1, x2, x3;
      float32_t c0, b0;
 
