@@ -227,13 +227,8 @@ void arm_wt_f32_firdec(
   const size_t c_len,
   const size_t inc)
 {
-     const float32_t* restrict cp;
-     const float32_t* restrict bp;
-
-     const float32_t* restrict ip0;
-     const float32_t* restrict ip1;
-     const float32_t* restrict ip2;
-     const float32_t* restrict ip3;
+     const float32_t *ip0, *ip1, *ip2, *ip3;
+     const float32_t *cp, *bp;
 
      float32_t al0, al1, al2, al3;
      float32_t ah0, ah1, ah2, ah3;
@@ -448,9 +443,7 @@ void arm_wt_f32_fir(
   const float32_t* restrict b,
   const size_t c_len)
 {
-     const float32_t* restrict ip;
-     const float32_t* restrict cp;
-     const float32_t* restrict bp;
+     const float32_t *ip, *cp, *bp;
 
      float32_t al0, al1, al2, al3;
      float32_t ah0, ah1, ah2, ah3;
@@ -493,97 +486,57 @@ void arm_wt_f32_fir(
                b0 = *bp++;
                x3 = *ip++;
 
-               pl0 = x0 * c0;
-               pl1 = x1 * c0;
-               pl2 = x2 * c0;
-               pl3 = x3 * c0;
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
 
-               ph0 = x0 * b0;
-               ph1 = x1 * b0;
-               ph2 = x2 * b0;
-               ph3 = x3 * b0;
-
-               al0 += pl0;
-               al1 += pl1;
-               al2 += pl2;
-               al3 += pl3;
-
-               ah0 += ph0;
-               ah1 += ph1;
-               ah2 += ph2;
-               ah3 += ph3;
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
 
                c0 = *cp++;
                b0 = *bp++;
                x0 = *ip++;
 
-               pl0 = x1 * c0;
-               pl1 = x2 * c0;
-               pl2 = x3 * c0;
-               pl3 = x0 * c0;
+               al0 += x1 * c0;
+               al1 += x2 * c0;
+               al2 += x3 * c0;
+               al3 += x0 * c0;
 
-               ph0 = x1 * b0;
-               ph1 = x2 * b0;
-               ph2 = x3 * b0;
-               ph3 = x0 * b0;
-
-               al0 += pl0;
-               al1 += pl1;
-               al2 += pl2;
-               al3 += pl3;
-
-               ah0 += ph0;
-               ah1 += ph1;
-               ah2 += ph2;
-               ah3 += ph3;
+               ah0 += x1 * b0;
+               ah1 += x2 * b0;
+               ah2 += x3 * b0;
+               ah3 += x0 * b0;
 
                c0 = *cp++;
                b0 = *bp++;
                x1 = *ip++;
 
-               pl0 = x2 * c0;
-               pl1 = x3 * c0;
-               pl2 = x0 * c0;
-               pl3 = x1 * c0;
+               al0 += x2 * c0;
+               al1 += x3 * c0;
+               al2 += x0 * c0;
+               al3 += x1 * c0;
 
-               ph0 = x2 * b0;
-               ph1 = x3 * b0;
-               ph2 = x0 * b0;
-               ph3 = x1 * b0;
-
-               al0 += pl0;
-               al1 += pl1;
-               al2 += pl2;
-               al3 += pl3;
-
-               ah0 += ph0;
-               ah1 += ph1;
-               ah2 += ph2;
-               ah3 += ph3;
+               ah0 += x2 * b0;
+               ah1 += x3 * b0;
+               ah2 += x0 * b0;
+               ah3 += x1 * b0;
 
                c0 = *cp++;
                b0 = *bp++;
                x2 = *ip++;
 
-               pl0 = x3 * c0;
-               pl1 = x0 * c0;
-               pl2 = x1 * c0;
-               pl3 = x2 * c0;
+               al0 += x3 * c0;
+               al1 += x0 * c0;
+               al2 += x1 * c0;
+               al3 += x2 * c0;
 
-               ph0 = x3 * b0;
-               ph1 = x0 * b0;
-               ph2 = x1 * b0;
-               ph3 = x2 * b0;
-
-               al0 += pl0;
-               al1 += pl1;
-               al2 += pl2;
-               al3 += pl3;
-
-               ah0 += ph0;
-               ah1 += ph1;
-               ah2 += ph2;
-               ah3 += ph3;
+               ah0 += x3 * b0;
+               ah1 += x0 * b0;
+               ah2 += x1 * b0;
+               ah3 += x2 * b0;
 
                cnt_b--;
           }
@@ -596,25 +549,15 @@ void arm_wt_f32_fir(
                b0 = *bp++;
                x3 = *ip++;
 
-               pl0 = x0 * c0;
-               pl1 = x1 * c0;
-               pl2 = x2 * c0;
-               pl3 = x3 * c0;
+               al0 += x0 * c0;
+               al1 += x1 * c0;
+               al2 += x2 * c0;
+               al3 += x3 * c0;
 
-               ph0 = x0 * b0;
-               ph1 = x1 * b0;
-               ph2 = x2 * b0;
-               ph3 = x3 * b0;
-
-               al0 += pl0;
-               al1 += pl1;
-               al2 += pl2;
-               al3 += pl3;
-
-               ah0 += ph0;
-               ah1 += ph1;
-               ah2 += ph2;
-               ah3 += ph3;
+               ah0 += x0 * b0;
+               ah1 += x1 * b0;
+               ah2 += x2 * b0;
+               ah3 += x3 * b0;
 
                x0 = x1;
                x1 = x2;
