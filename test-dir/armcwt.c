@@ -89,24 +89,27 @@ int main(int argc, char* argv[])
      arm_wt_f32_free(&ufwt);
 
      float32_t in_f[N + NC];
-     float32_t hp_A[N], hp_B[N];
-     float32_t lp_A[N], lp_B[N];
+     float32_t hp_A[N], hp_B[N / 2];
+     float32_t lp_A[N], lp_B[N / 2];
 
      for (size_t i = 0; i < NC; ++i) in_f[i] = mX.data[i];
      for (size_t i = 0; i < N; ++i) in_f[i + NC] = mX.data[i];
 
      arm_wt_f32_fir(in_f, lp_A, hp_A, N, mC.data, mB.data, NC);
-     arm_wt_f32_firdec(in_f, lp_B, hp_B, N, mC.data, mB.data, NC, 1);
+     arm_wt_f32_firdec(in_f, lp_B, hp_B, N, mC.data, mB.data, NC);
 
      printf("\nHP A/B:\n");
      mat_print_matrix(hp_A, 1, N);
-     mat_print_matrix(hp_B, 1, N);
+     mat_print_matrix(hp_B, 1, N / 2);
      printf("\nLP A/B:\n");
      mat_print_matrix(lp_A, 1, N);
-     mat_print_matrix(lp_B, 1, N);
+     mat_print_matrix(lp_B, 1, N / 2);
 
-     const bool ok3 = mat_compare_epsilon(lp_A, lp_B, N, 1e-6);
-     const bool ok4 = mat_compare_epsilon(hp_A, hp_B, N, 1e-6);
+     bool ok3 = true;
+     bool ok4 = true;
+
+     for (size_t i = 0; i < N / 2; ++i) ok3 = ok3 && (lp_A[2 * i] == lp_B[i]);
+     for (size_t i = 0; i < N / 2; ++i) ok4 = ok4 && (hp_A[2 * i] == hp_B[i]);
 
      hdf_free_matrix(&mC);
      hdf_free_matrix(&mB);

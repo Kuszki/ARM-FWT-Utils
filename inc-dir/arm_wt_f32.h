@@ -97,7 +97,7 @@ typedef struct
      float32_t* in; //!< Private internal input vector with extra items to store current FIR state
 
      size_t offset; //!< Read-only extra item count of buffers to store subsequent FIR states
-     size_t dec; //!< Read-only decimation factor (1 in case of CWT and 2 in case of FWT)
+     size_t dec; //!< Read-only decimation option (0 in case of CWT and 1 in case of FWT)
 
 } arm_wt_f32_instance;
 
@@ -233,7 +233,7 @@ void arm_wt_f32_fir(
   const size_t c_len);
 
 /**
- * @brief Perform FIR with optional decimation
+ * @brief Perform FIR with decimation
  * @param in [in] Input data pointer
  * @param out_lp [out] Output data pointer for low-pass coefficients
  * @param out_hp [out] Output data pointer for high-pass coefficients
@@ -241,10 +241,9 @@ void arm_wt_f32_fir(
  * @param c [in] Pointer to low-pass FIR coefficients
  * @param b [in] Pointer to high-pass FIR coefficients
  * @param c_len [in] Number FIR coefficients
- * @param inc [in] Decimation factor (number of elements to skip per output value)
  *
  * This function perform parallel input signal decomposition using given FIR coefficients. The length
- * of out_lp and out_hp must be at least n_len / inc. The length of c and b must be the same and equal
+ * of out_lp and out_hp must be at least n_len / 2. The length of c and b must be the same and equal
  * to c_len. The actual length of in must be n_len+c_len-1 where the first c_len-1 elements contains
  * previous input values (equivalent to given boundary conditions).
  *
@@ -256,8 +255,7 @@ void arm_wt_f32_firdec(
   const size_t n_len,
   const float32_t* restrict c,
   const float32_t* restrict b,
-  const size_t c_len,
-  const size_t inc);
+  const size_t c_len);
 
 /**
  * @brief Perform single-run FWT algorithm

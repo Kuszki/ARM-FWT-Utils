@@ -32,7 +32,7 @@ arm_wt_status arm_fwt_f32_init(arm_wt_f32_instance* instance)
      if ((instance->n_len >> (instance->n_dec - 1)) < instance->c_len) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
-     instance->dec = 2;
+     instance->dec = 1;
 
      instance->buf = malloc((instance->n_dec * 2) * sizeof(float32_t*));
      instance->out = malloc((instance->n_dec + 1) * sizeof(float32_t*));
@@ -76,7 +76,7 @@ arm_wt_status arm_cwt_f32_init(arm_wt_f32_instance* instance)
      if (instance->n_len < instance->c_len) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
-     instance->dec = 1;
+     instance->dec = 0;
 
      const size_t curr_len = (instance->n_len + instance->offset);
 
@@ -144,15 +144,14 @@ void arm_wt_f32_run(
        instance->buf[1],
        instance->offset);
 
-     if (instance->dec > 1) arm_wt_f32_firdec(
+     if (instance->dec) arm_wt_f32_firdec(
        instance->in,
        instance->buf[1] + instance->offset,
        instance->buf[0] + instance->offset,
        instance->n_len,
        instance->c,
        instance->b,
-       instance->c_len,
-       instance->dec);
+       instance->c_len);
      else arm_wt_f32_fir(
        instance->in,
        instance->buf[1] + instance->offset,
@@ -164,25 +163,24 @@ void arm_wt_f32_run(
 
      for (size_t i = 1; i < instance->n_dec; ++i)
      {
-          if (i + 1 != instance->n_dec) arm_wt_f32_copy(
+          if (instance->n_dec != i + 1) arm_wt_f32_copy(
             instance->buf[2 * i + 1] + instance->lens[i],
             instance->buf[2 * i + 1],
             instance->offset);
 
-          if (instance->dec > 1) arm_wt_f32_firdec(
+          if (instance->dec) arm_wt_f32_firdec(
             instance->buf[2 * i - 1],
             instance->buf[2 * i + 1] + instance->offset,
             instance->buf[2 * i] + instance->offset,
             instance->lens[i - 1],
             instance->c,
             instance->b,
-            instance->c_len,
-            instance->dec);
+            instance->c_len);
           else arm_wt_f32_fir(
             instance->buf[2 * i - 1],
             instance->buf[2 * i + 1] + instance->offset,
             instance->buf[2 * i] + instance->offset,
-            instance->lens[i - 1],
+            instance->n_len,
             instance->c,
             instance->b,
             instance->c_len);
@@ -224,8 +222,7 @@ void arm_wt_f32_firdec(
   const size_t n_len,
   const float32_t* restrict c,
   const float32_t* restrict b,
-  const size_t c_len,
-  const size_t inc)
+  const size_t c_len)
 {
      const float32_t *ip0, *ip1, *ip2, *ip3;
      const float32_t *cp, *bp;
@@ -238,7 +235,7 @@ void arm_wt_f32_firdec(
 
      size_t cnt_a, cnt_b;
 
-     cnt_a = (n_len / inc) >> 2;
+     cnt_a = (n_len / 2) >> 2;
 
      while (cnt_a)
      {
@@ -246,9 +243,9 @@ void arm_wt_f32_firdec(
           bp = b;
 
           ip0 = in;
-          ip1 = ip0 + inc;
-          ip2 = ip1 + inc;
-          ip3 = ip2 + inc;
+          ip1 = in + 2;
+          ip2 = in + 4;
+          ip3 = in + 6;
 
           al0 = 0.0f;
           al1 = 0.0f;
@@ -374,12 +371,12 @@ void arm_wt_f32_firdec(
           *out_hp++ = ah2;
           *out_hp++ = ah3;
 
-          in += 4 * inc;
+          in += 8;
 
           cnt_a -= 1;
      }
 
-     cnt_a = (n_len / inc) & 3;
+     cnt_a = (n_len / 2) & 3;
 
      while (cnt_a)
      {
@@ -428,7 +425,7 @@ void arm_wt_f32_firdec(
           *out_lp++ = al0;
           *out_hp++ = ah0;
 
-          in += inc;
+          in += 2;
 
           cnt_a -= 1;
      }
@@ -700,12 +697,12 @@ void arm_wt_f32_mallat(
 
           if (n_dec)
           {
-               arm_wt_f32_firdec(_in, _out, out + n_len_p2, n_len, c, b, c_len, 2);
+               arm_wt_f32_firdec(_in, _out, out + n_len_p2, n_len, c, b, c_len);
                arm_wt_f32_copy(_out, _out + n_len_p2, c_len_m1);
           }
           else
           {
-               arm_wt_f32_firdec(_in, out, out + n_len_p2, n_len, c, b, c_len, 2);
+               arm_wt_f32_firdec(_in, out, out + n_len_p2, n_len, c, b, c_len);
           }
 
           if (_out == tmp_a)
