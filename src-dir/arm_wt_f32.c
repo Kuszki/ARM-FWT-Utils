@@ -235,7 +235,7 @@ void arm_wt_f32_firdec(
 
      size_t cnt_a, cnt_b;
 
-     cnt_a = (n_len / 2) >> 2;
+     cnt_a = n_len >> 3;
 
      while (cnt_a)
      {
@@ -243,9 +243,9 @@ void arm_wt_f32_firdec(
           bp = b;
 
           ip0 = in;
-          ip1 = in + 2;
-          ip2 = in + 4;
-          ip3 = in + 6;
+          ip1 = ip0 + 2;
+          ip2 = ip1 + 2;
+          ip3 = ip2 + 2;
 
           al0 = 0.0f;
           al1 = 0.0f;
@@ -376,7 +376,7 @@ void arm_wt_f32_firdec(
           cnt_a -= 1;
      }
 
-     cnt_a = (n_len / 2) & 3;
+     cnt_a = (n_len >> 1) & 3;
 
      while (cnt_a)
      {
