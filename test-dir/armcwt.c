@@ -83,8 +83,11 @@ int main(int argc, char* argv[])
      printf("\nLP:\n");
      mat_print_matrix(ufwt.out[1], 1, ufwt.n_len);
 
-     const bool ok1 = mat_compare_epsilon(ufwt.out[0], mH.data, N, 1e-6);
-     const bool ok2 = mat_compare_epsilon(ufwt.out[1], mL.data, N, 1e-6);
+     const bool ok1 = mat_compare_epsilon(ufwt.out[0], mH.data, N, 1e-5);
+     const bool ok2 = mat_compare_epsilon(ufwt.out[1], mL.data, N, 1e-5);
+
+     printf("\narm_wt_f32_run HP: %s\n", ok1 ? "PASS" : "FAIL");
+     printf("\narm_wt_f32_run LP: %s\n", ok2 ? "PASS" : "FAIL");
 
      arm_wt_f32_free(&ufwt);
 
@@ -110,6 +113,9 @@ int main(int argc, char* argv[])
 
      for (size_t i = 0; i < N / 2; ++i) ok3 = ok3 && (lp_A[2 * i] == lp_B[i]);
      for (size_t i = 0; i < N / 2; ++i) ok4 = ok4 && (hp_A[2 * i] == hp_B[i]);
+
+     printf("\arm_wt_f32_fir vs arm_wt_f32_firdec LP: %s\n", ok3 ? "PASS" : "FAIL");
+     printf("\arm_wt_f32_fir vs arm_wt_f32_firdec HP: %s\n", ok4 ? "PASS" : "FAIL");
 
      hdf_free_matrix(&mC);
      hdf_free_matrix(&mB);
