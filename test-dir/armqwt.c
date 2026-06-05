@@ -60,8 +60,8 @@ int main(int argc, char* argv[])
      arm_float_to_q15(cp_f32, cp_q15, NC);
      arm_float_to_q15(bp_f32, bp_q15, NC);
 
-     float32_t out_hp_f32[N / 2], out_lp_f32[N / 2], out_arm_f32[N / 2];
-     q15_t out_hp_q15[N / 2], out_lp_q15[N / 2], out_arm_q15[N / 2];
+     float32_t out_hp_f32[N], out_lp_f32[N], out_arm_f32[N];
+     q15_t out_hp_q15[N], out_lp_q15[N], out_arm_q15[N];
 
      memset(out_hp_f32, 0, sizeof(out_hp_f32));
      memset(out_lp_f32, 0, sizeof(out_lp_f32));
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
      mat_print_matrix_q15(out_hp_q15, 1, N / 2);
 
      arm_q15_to_float(out_lp_q15, out_lp_f32, N / 2);
-     arm_q15_to_float(out_lp_q15, out_lp_f32, N / 2);
+     arm_q15_to_float(out_hp_q15, out_hp_f32, N / 2);
 
      printf("\nq15 -> f32 LP / HP\n");
      mat_print_matrix_f32(out_lp_f32, 1, N / 2);
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 
      printf("\nNo. | out LP | q15_t  | f -> q | float32_t | q -> f    | rel. err.\n");
 
-     bool ok = true;
+     bool ok1 = true;
 
      for (int i = 0; i < N / 2; i++)
      {
@@ -154,10 +154,58 @@ int main(int argc, char* argv[])
 
           printf("%3d | %+6d | %+6d | %+6d | %+1.6f | %+1.6f | %+3.3f%% -> %s\n", i, out, q, f_q, f, q_f, err, check ? "OK" : "FAIL");
 
-          ok = ok && check;
+          ok1 = ok1 && check;
      }
 
-     printf("\nq15 implementation status: %s\n\n", ok ? "OK" : "FAIL");
+     printf("\nq15 FWT implementation status: %s\n\n", ok1 ? "OK" : "FAIL");
 
-     return ok ? 0 : 1;
+     arm_fir_instance_f32 C_f32;
+     arm_fir_instance_q15 C_q15;
+
+     memset(state_f32, 0, sizeof(state_f32));
+     memset(state_q15, 0, sizeof(state_q15));
+
+     arm_fir_init_f32(&C_f32, NC, cp_f32, state_f32, N);
+     arm_fir_init_q15(&C_q15, NC, cp_q15, state_q15, N);
+
+     arm_fir_f32(&C_f32, in_f32 + (NC - 1), out_arm_f32, N);
+     arm_fir_q15(&C_q15, in_q15 + (NC - 1), out_arm_q15, N);
+
+     arm_wt_f32_cwt(in_f32, out_lp_f32, out_hp_f32, N, cp_f32, bp_f32, NC);
+     arm_wt_q15_cwt(in_q15, out_lp_q15, out_hp_q15, N, cp_q15, bp_q15, NC);
+
+     printf("\nf32 LP / HP\n");
+     mat_print_matrix_f32(out_lp_f32, 1, N);
+     mat_print_matrix_f32(out_hp_f32, 1, N);
+
+     printf("\nq15 LP / HP\n");
+     mat_print_matrix_q15(out_lp_q15, 1, N);
+     mat_print_matrix_q15(out_hp_q15, 1, N);
+
+     printf("\nNo. | out LP | q15_t  | f -> q | float32_t | q -> f    | rel. err.\n");
+
+     bool ok2 = true;
+
+     for (int i = 0; i < N; i++)
+     {
+          const q15_t out = out_lp_q15[i];
+
+          const q15_t q = out_arm_q15[i];
+          const float32_t f = out_arm_f32[i];
+
+          const float q_f = (float)(q) / 32768.0f;
+          const q31_t f_q = (q31_t)(f * 32768.0f);
+
+          float err = 100.0f * (q_f - f) / f;
+
+          const bool check = q == out;
+
+          printf("%3d | %+6d | %+6d | %+6d | %+1.6f | %+1.6f | %+3.3f%% -> %s\n", i, out, q, f_q, f, q_f, err, check ? "OK" : "FAIL");
+
+          ok2 = ok2 && check;
+     }
+
+     printf("\nq15 CWT implementation status: %s\n\n", ok2 ? "OK" : "FAIL");
+
+     return ok1 && ok2 ? 0 : 1;
 }

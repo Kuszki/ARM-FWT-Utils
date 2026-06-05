@@ -424,21 +424,136 @@ void arm_wt_q15_cwt(
   const q15_t* b,
   const size_t c_len)
 {
-     // const q15_t *ip, *cp, *bp;
+     const q15_t *cp, *bp, *ip;
 
-     // q15_t al0, al1, al2, al3;
-     // q15_t ah0, ah1, ah2, ah3;
+     q31_t al0, al1, al2, al3;
+     q31_t ah0, ah1, ah2, ah3;
 
-     // q15_t x0, x1, x2, x3;
-     // q15_t c0, b0;
+     q31_t x0, x1, x2;
+     q31_t c0, b0;
 
-     // size_t cnt_a, cnt_b;
+     size_t cnt_a, cnt_b;
 
-     // cnt_a = n_len >> 2;
+     cnt_a = n_len >> 2;
 
-     // while (cnt_a)
-     // {
-     // }
+     while (cnt_a)
+     {
+          ip = in;
+          cp = c;
+          bp = b;
+
+          al0 = 0;
+          al1 = 0;
+          al2 = 0;
+          al3 = 0;
+
+          ah0 = 0;
+          ah1 = 0;
+          ah2 = 0;
+          ah3 = 0;
+
+          x0 = read_q15x2_ia(&ip);
+          x2 = read_q15x2_ia(&ip);
+
+          cnt_b = c_len >> 2;
+
+          while (cnt_b)
+          {
+               c0 = read_q15x2_ia(&cp);
+               b0 = read_q15x2_ia(&bp);
+
+               al0 = __SMLAD(x0, c0, al0);
+               al2 = __SMLAD(x2, c0, al2);
+
+               ah0 = __SMLAD(x0, b0, ah0);
+               ah2 = __SMLAD(x2, b0, ah2);
+
+               x1 = __PKHBT(x2, x0, 0);
+
+               x0 = read_q15x2_ia(&ip);
+
+               al1 = __SMLADX(x1, c0, al1);
+               ah1 = __SMLADX(x1, b0, ah1);
+
+               x1 = __PKHBT(x0, x2, 0);
+
+               al3 = __SMLADX(x1, c0, al3);
+               ah3 = __SMLADX(x1, b0, ah3);
+
+               c0 = read_q15x2_ia(&cp);
+               b0 = read_q15x2_ia(&bp);
+
+               al0 = __SMLAD(x2, c0, al0);
+               ah0 = __SMLAD(x2, c0, ah0);
+
+               x2 = read_q15x2_ia(&ip);
+
+               al2 = __SMLAD(x0, c0, al2);
+               ah2 = __SMLAD(x0, b0, ah2);
+
+               al1 = __SMLADX(x1, c0, al1);
+               ah1 = __SMLADX(x1, b0, ah1);
+
+               x1 = __PKHBT(x2, x0, 0);
+
+               al3 = __SMLADX(x1, c0, al3);
+               ah3 = __SMLADX(x1, b0, ah3);
+
+               cnt_b -= 1;
+          }
+
+          write_q15x2_ia(&out_lp, __PKHBT(__SSAT((al0 >> 15), 16), __SSAT((al1 >> 15), 16), 16));
+          write_q15x2_ia(&out_lp, __PKHBT(__SSAT((al2 >> 15), 16), __SSAT((al3 >> 15), 16), 16));
+
+          write_q15x2_ia(&out_hp, __PKHBT(__SSAT((ah0 >> 15), 16), __SSAT((ah1 >> 15), 16), 16));
+          write_q15x2_ia(&out_hp, __PKHBT(__SSAT((ah2 >> 15), 16), __SSAT((ah3 >> 15), 16), 16));
+
+          in += 4;
+
+          cnt_a -= 1;
+     }
+
+     cnt_a = n_len & 3;
+
+     while (cnt_a)
+     {
+          ip = in;
+          cp = c;
+          bp = b;
+
+          al0 = 0;
+          ah0 = 0;
+
+          cnt_b = c_len >> 2;
+
+          while (cnt_b)
+          {
+               c0 = read_q15x2_ia(&cp);
+               b0 = read_q15x2_ia(&bp);
+
+               x0 = read_q15x2_ia(&ip);
+
+               al0 = __SMLAD(x0, c0, al0);
+               ah0 = __SMLAD(x0, b0, ah0);
+
+               c0 = read_q15x2_ia(&cp);
+               b0 = read_q15x2_ia(&bp);
+
+               x2 = read_q15x2_ia(&ip);
+
+               al0 = __SMLAD(x2, c0, al0);
+               ah0 = __SMLAD(x2, c0, ah0);
+
+               cnt_b -= 1;
+          }
+
+          *out_lp++ = (q15_t)(__SSAT((al0 >> 15), 16));
+          *out_hp++ = (q15_t)(__SSAT((ah0 >> 15), 16));
+
+          in += 1;
+
+          cnt_a -= 1;
+     }
 }
 
 void arm_wt_q15_copy(
