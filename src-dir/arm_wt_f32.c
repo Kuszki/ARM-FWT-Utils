@@ -124,8 +124,8 @@ void arm_wt_f32_free(arm_wt_f32_instance* instance)
 }
 
 void arm_wt_f32_run(
-  arm_wt_f32_instance* restrict instance,
-  const uint16_t* restrict in)
+  arm_wt_f32_instance* instance,
+  const uint16_t* in)
 {
      arm_wt_f32_copy(
        instance->in + instance->n_len,
@@ -188,40 +188,54 @@ void arm_wt_f32_run(
 }
 
 void arm_wt_f32_scale(
-  const uint16_t* restrict in,
-  float32_t* restrict out,
+  const uint16_t* in,
+  float32_t* out,
   const size_t len,
   const float32_t scale,
   const float32_t shift)
 {
-     size_t blk = len >> 3;
-     size_t rem = len & 7;
+     size_t blk = len >> 2;
+     size_t rem = len & 3;
 
-     while (blk--)
+     if (shift)
      {
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
-          *out++ = *in++ * scale + shift;
+          while (blk--)
+          {
+               *out++ = *in++ * scale + shift;
+               *out++ = *in++ * scale + shift;
+               *out++ = *in++ * scale + shift;
+               *out++ = *in++ * scale + shift;
+          }
+
+          while (rem--)
+          {
+               *out++ = *in++ * scale + shift;
+          }
      }
-
-     while (rem--)
+     else
      {
-          *out++ = *in++ * scale + shift;
+          while (blk--)
+          {
+               *out++ = *in++ * scale;
+               *out++ = *in++ * scale;
+               *out++ = *in++ * scale;
+               *out++ = *in++ * scale;
+          }
+
+          while (rem--)
+          {
+               *out++ = *in++ * scale;
+          }
      }
 }
 
 void arm_wt_f32_fwt(
-  const float32_t* restrict in,
-  float32_t* restrict out_lp,
-  float32_t* restrict out_hp,
+  const float32_t* in,
+  float32_t* out_lp,
+  float32_t* out_hp,
   const size_t n_len,
-  const float32_t* restrict c,
-  const float32_t* restrict b,
+  const float32_t* c,
+  const float32_t* b,
   const size_t c_len)
 {
      const float32_t *ip0, *ip1, *ip2, *ip3;
@@ -432,12 +446,12 @@ void arm_wt_f32_fwt(
 }
 
 void arm_wt_f32_cwt(
-  const float32_t* restrict in,
-  float32_t* restrict out_lp,
-  float32_t* restrict out_hp,
+  const float32_t* in,
+  float32_t* out_lp,
+  float32_t* out_hp,
   const size_t n_len,
-  const float32_t* restrict c,
-  const float32_t* restrict b,
+  const float32_t* c,
+  const float32_t* b,
   const size_t c_len)
 {
      const float32_t *ip, *cp, *bp;
@@ -631,8 +645,8 @@ void arm_wt_f32_cwt(
 }
 
 void arm_wt_f32_copy(
-  const float32_t* restrict src,
-  float32_t* restrict dst,
+  const float32_t* src,
+  float32_t* dst,
   const size_t len)
 {
      size_t blk = len >> 2;
@@ -653,7 +667,7 @@ void arm_wt_f32_copy(
 }
 
 void arm_wt_f32_zero(
-  float32_t* restrict dst,
+  float32_t* dst,
   const size_t len)
 {
      size_t blk = len >> 2;
@@ -674,12 +688,12 @@ void arm_wt_f32_zero(
 }
 
 void arm_wt_f32_mallat(
-  const float32_t* restrict in,
-  float32_t* restrict out,
+  const float32_t* in,
+  float32_t* out,
   size_t n_len,
   size_t n_dec,
-  const float32_t* restrict c,
-  const float32_t* restrict b,
+  const float32_t* c,
+  const float32_t* b,
   const size_t c_len)
 {
      const size_t c_len_m1 = c_len - 1;
@@ -688,8 +702,8 @@ void arm_wt_f32_mallat(
        tmp_a[n_len / 2 + c_len_m1],
        tmp_b[n_len / 2 + c_len_m1];
 
-     const float32_t* restrict _in = in;
-     float32_t* restrict _out = tmp_a;
+     const float32_t* _in = in;
+     float32_t* _out = tmp_a;
 
      while (n_dec--)
      {
