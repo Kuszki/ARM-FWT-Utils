@@ -33,6 +33,10 @@
  * is scaled and shifted calling arm_wt_f32_run. This algorithm is designed to run in cycle,
  * between subsequent ADC interrupts signed after conversion of N samples is done.
  *
+ * This implementation uses IEEE 754 data format (1 sign bit and 15 fractional bits). You need
+ * hardware FPU to keep good performance. If you need faster implementation but with worst
+ * precission you can check arm_wt_q15_instance using q15 number format.
+ *
  * Before using arm_wt_f32_run required fields must be filled and constructor arm_fwt_f32_init or
  * arm_cwt_f32_init must be executed. Fields to fill before running constructor are:
  * - arm_wt_f32_instance::c - low-pass FIR coefficients (stored in reverse order)

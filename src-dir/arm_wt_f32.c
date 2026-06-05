@@ -73,7 +73,7 @@ arm_wt_status arm_cwt_f32_init(arm_wt_f32_instance* instance)
 
      if (!instance->c || !instance->b) return WT_WRONG_CPTR;
 
-     if (instance->n_len < instance->c_len) return WT_WRONG_NDEC;
+     if ((instance->n_len >> (instance->n_dec - 1)) < instance->c_len) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
      instance->dec = 0;
