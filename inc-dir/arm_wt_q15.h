@@ -63,8 +63,8 @@ typedef struct
      const q15_t* c; //!< Pointer to low-pass FIR coefficients (stored in reverse order)
      const q15_t* b; //!< Pointer to high-pass FIR coefficients (stored in reverse order)
 
-     q15_t scale; //!< Scale factor for ADC results (X = scale * ADC + shift)
-     q15_t shift; //!< Shift value for ADC results (X = scale * ADC + shift)
+     q15_t shift; //!< Scale factor for ADC results (X = scale * ADC + bias)
+     q15_t bias; //!< Shift value for ADC results (X = scale * ADC + shift)
 
      size_t n_dec; //!< Number of decomposition levels (where n_dec > 1)
      size_t n_len; //!< Input vector data length (number of ADC output values)
@@ -136,30 +136,30 @@ void arm_wt_q15_free(arm_wt_q15_instance* instance);
  *
  */
 void arm_wt_q15_run(
-  arm_wt_q15_instance* restrict instance,
-  const uint16_t* restrict in);
+  arm_wt_q15_instance* instance,
+  const uint16_t* in);
 
-// /**
-//  * @brief Perform uint16_t -> q15_t conversion with scale and shift
-//  * @param in [in] Input data pointer
-//  * @param out [out] Output data pointer
-//  * @param len [in] Number of elements to convert
-//  * @param scale [in] Scale factor
-//  * @param shift [in] Shift value
-//  *
-//  * This function performs uint16_t -> q15_t conversion with scale and shift
-//  according
-//  * to formula out = scale * in + shift. Input and output buffers must be
-//  length of at least
-//  * len. This function unroll loop using 4 MAC operations per iteration.
-//  *
-//  */
-// void arm_wt_q15_scale(
-//   const uint16_t* restrict in,
-//   q15_t* restrict out,
-//   const size_t len,
-//   const q15_t scale,
-//   const q15_t shift);
+/**
+ * @brief Perform uint16_t -> q15_t conversion with scale and shift
+ * @param in [in] Input data pointer
+ * @param out [out] Output data pointer
+ * @param len [in] Number of elements to convert
+ * @param scale [in] Scale factor
+ * @param shift [in] Shift value
+ *
+ * This function performs uint16_t -> q15_t conversion with scale and shift
+ according
+ * to formula out = scale * in + shift. Input and output buffers must be
+ length of at least
+ * len. This function unroll loop using 4 MAC operations per iteration.
+ *
+ */
+void arm_wt_q15_scale(
+  const uint16_t* in,
+  q15_t* out,
+  const size_t len,
+  const q15_t shift,
+  const q15_t bias);
 
 /**
  * @brief Copy q15_t from source to destination without any changes
@@ -172,8 +172,8 @@ void arm_wt_q15_run(
  *
  */
 void arm_wt_q15_copy(
-  const q15_t* restrict scr,
-  q15_t* restrict dst,
+  const q15_t* scr,
+  q15_t* dst,
   const size_t len);
 
 /**
@@ -186,7 +186,7 @@ void arm_wt_q15_copy(
  *
  */
 void arm_wt_q15_zero(
-  q15_t* restrict dst,
+  q15_t* dst,
   const size_t len);
 
 /**
@@ -206,12 +206,12 @@ void arm_wt_q15_zero(
  *
  */
 void arm_wt_q15_cwt(
-  const q15_t* restrict in,
-  q15_t* restrict out_lp,
-  q15_t* restrict out_hp,
+  const q15_t* in,
+  q15_t* out_lp,
+  q15_t* out_hp,
   const size_t n_len,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len);
 
 /**
@@ -232,12 +232,12 @@ void arm_wt_q15_cwt(
  *
  */
 void arm_wt_q15_fwt(
-  const q15_t* restrict in,
-  q15_t* restrict out_lp,
-  q15_t* restrict out_hp,
+  const q15_t* in,
+  q15_t* out_lp,
+  q15_t* out_hp,
   const size_t n_len,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len);
 
 /**
@@ -258,12 +258,12 @@ void arm_wt_q15_fwt(
  *
  */
 void arm_wt_q15_mallat(
-  const q15_t* restrict in,
-  q15_t* restrict out,
+  const q15_t* in,
+  q15_t* out,
   size_t n_len,
   size_t n_dec,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len);
 
 #endif

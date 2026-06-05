@@ -98,6 +98,27 @@ int main(int argc, char* argv[])
      mat_print_matrix_f32(out_lp_f32, 1, N / 2);
      mat_print_matrix_f32(out_hp_f32, 1, N / 2);
 
+     const uint16_t in_u16[] = { 1, 2, 5, 6, 7, 0, 3 };
+     const size_t in_u16_N = sizeof(in_u16) / sizeof(uint16_t);
+
+     q15_t scale_out[in_u16_N];
+     memset(scale_out, 0, sizeof(scale_out) / sizeof(q15_t));
+
+     printf("\ntest coefs\n");
+     mat_print_matrix_q15(in_u16, 1, in_u16_N);
+
+     printf("\nscale +10, << 0\n");
+     arm_wt_q15_scale(in_u16, scale_out, in_u16_N, 0, 10);
+     mat_print_matrix_q15(scale_out, 1, in_u16_N);
+
+     printf("\nscale +0, << 1\n");
+     arm_wt_q15_scale(in_u16, scale_out, in_u16_N, 1, 0);
+     mat_print_matrix_q15(scale_out, 1, in_u16_N);
+
+     printf("\nscale -10, << 2\n");
+     arm_wt_q15_scale(in_u16, scale_out, in_u16_N, 1, -10);
+     mat_print_matrix_q15(scale_out, 1, in_u16_N);
+
      arm_fir_decimate_instance_f32 S_f32;
      arm_fir_decimate_instance_q15 S_q15;
 

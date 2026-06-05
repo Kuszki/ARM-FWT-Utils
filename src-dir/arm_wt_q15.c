@@ -124,20 +124,20 @@ void arm_wt_q15_free(arm_wt_q15_instance* instance)
 }
 
 void arm_wt_q15_run(
-  arm_wt_q15_instance* restrict instance,
-  const uint16_t* restrict in)
+  arm_wt_q15_instance* instance,
+  const uint16_t* in)
 {
      arm_wt_q15_copy(
        instance->in + instance->n_len,
        instance->in,
        instance->offset);
 
-     // arm_wt_q15_scale(
-     //   in,
-     //   instance->in + instance->offset,
-     //   instance->n_len,
-     //   instance->scale,
-     //   instance->shift);
+     arm_wt_q15_scale(
+       in,
+       instance->in + instance->offset,
+       instance->n_len,
+       instance->shift,
+       instance->bias);
 
      if (instance->n_dec > 1) arm_wt_q15_copy(
        instance->buf[1] + instance->lens[0],
@@ -187,41 +187,94 @@ void arm_wt_q15_run(
      }
 }
 
-// void arm_wt_q15_scale(
-//   const uint16_t* restrict in,
-//   q15_t* restrict out,
-//   const size_t len,
-//   const q15_t scale,
-//   const q15_t shift)
-// {
-//      size_t blk = len >> 3;
-//      size_t rem = len & 7;
+void arm_wt_q15_scale(
+  const uint16_t* in,
+  q15_t* out,
+  const size_t len,
+  const q15_t shift,
+  const q15_t bias)
+{
+     size_t blk = len >> 2;
+     size_t rem = len & 3;
 
-//      while (blk--)
-//      {
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//           *out++ = *in++ * scale + shift;
-//      }
+     q15_t o0, o1, o2, o3;
+     q31_t a0, a1, a2, a3;
 
-//      while (rem--)
-//      {
-//           *out++ = *in++ * scale + shift;
-//      }
-// }
+     uint32_t x0, x1;
 
-void arm_wt_q15_fwt_A(
-  const q15_t* restrict in,
-  q15_t* restrict out_lp,
-  q15_t* restrict out_hp,
+     if (bias && shift)
+     {
+          while (blk--)
+          {
+               x0 = read_q15x2_ia((q15_t**)(&in));
+               x1 = read_q15x2_ia((q15_t**)(&in));
+
+               a0 = ((q15_t)(x0 >> 16) + bias) << shift;
+               a1 = ((q15_t)(x0) + bias) << shift;
+               a2 = ((q15_t)(x1 >> 16) + bias) << shift;
+               a3 = ((q15_t)(x1) + bias) << shift;
+
+               write_q15x2_ia(&out, __PKHBT(a1, a0, 16));
+               write_q15x2_ia(&out, __PKHBT(a3, a2, 16));
+          }
+
+          while (rem--)
+          {
+               *out++ = ((q15_t)(*in++) + bias) << shift;
+          }
+     }
+     else if (bias)
+     {
+          while (blk--)
+          {
+               x0 = read_q15x2_ia((q15_t**)(&in));
+               x1 = read_q15x2_ia((q15_t**)(&in));
+
+               a0 = ((q15_t)(x0 >> 16) + bias);
+               a1 = ((q15_t)(x0) + bias);
+               a2 = ((q15_t)(x1 >> 16) + bias);
+               a3 = ((q15_t)(x1) + bias);
+
+               write_q15x2_ia(&out, __PKHBT(a1, a0, 16));
+               write_q15x2_ia(&out, __PKHBT(a3, a2, 16));
+          }
+
+          while (rem--)
+          {
+               *out++ = ((q15_t)(*in++) + bias);
+          }
+     }
+     else if (shift)
+     {
+          while (blk--)
+          {
+               x0 = read_q15x2_ia((q15_t**)(&in));
+               x1 = read_q15x2_ia((q15_t**)(&in));
+
+               a0 = ((q15_t)(x0 >> 16)) << shift;
+               a1 = ((q15_t)(x0)) << shift;
+               a2 = ((q15_t)(x1 >> 16)) << shift;
+               a3 = ((q15_t)(x1)) << shift;
+
+               write_q15x2_ia(&out, __PKHBT(a1, a0, 16));
+               write_q15x2_ia(&out, __PKHBT(a3, a2, 16));
+          }
+
+          while (rem--)
+          {
+               *out++ = ((q15_t)(*in++)) << shift;
+          }
+     }
+     else arm_wt_q15_copy((const q15_t*)(in), out, len);
+}
+
+void arm_wt_q15_fwt(
+  const q15_t* in,
+  q15_t* out_lp,
+  q15_t* out_hp,
   const size_t n_len,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len)
 {
      const q15_t *ip0, *ip1;
@@ -337,13 +390,13 @@ void arm_wt_q15_fwt_A(
      }
 }
 
-void arm_wt_q15_fwt(
-  const q15_t* restrict in,
-  q15_t* restrict out_lp,
-  q15_t* restrict out_hp,
+void arm_wt_q15_fwt_B(
+  const q15_t* in,
+  q15_t* out_lp,
+  q15_t* out_hp,
   const size_t n_len,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len)
 {
      const q31_t *ip0, *ip1;
@@ -460,12 +513,12 @@ void arm_wt_q15_fwt(
 }
 
 void arm_wt_q15_fwt_S(
-  const q15_t* restrict in,
-  q15_t* restrict out_lp,
-  q15_t* restrict out_hp,
+  const q15_t* in,
+  q15_t* out_lp,
+  q15_t* out_hp,
   const size_t n_len,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len)
 {
 
@@ -485,12 +538,12 @@ void arm_wt_q15_fwt_S(
 }
 
 void arm_wt_q15_cwt(
-  const q15_t* restrict in,
-  q15_t* restrict out_lp,
-  q15_t* restrict out_hp,
+  const q15_t* in,
+  q15_t* out_lp,
+  q15_t* out_hp,
   const size_t n_len,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len)
 {
      // const q15_t *ip, *cp, *bp;
@@ -511,8 +564,8 @@ void arm_wt_q15_cwt(
 }
 
 void arm_wt_q15_copy(
-  const q15_t* restrict src,
-  q15_t* restrict dst,
+  const q15_t* src,
+  q15_t* dst,
   const size_t len)
 {
      size_t blk = len >> 2;
@@ -520,10 +573,8 @@ void arm_wt_q15_copy(
 
      while (blk--)
      {
-          *dst++ = *src++;
-          *dst++ = *src++;
-          *dst++ = *src++;
-          *dst++ = *src++;
+          write_q15x2_ia(&dst, read_q15x2_ia(&src));
+          write_q15x2_ia(&dst, read_q15x2_ia(&src));
      }
 
      while (rem--)
@@ -533,7 +584,7 @@ void arm_wt_q15_copy(
 }
 
 void arm_wt_q15_zero(
-  q15_t* restrict dst,
+  q15_t* dst,
   const size_t len)
 {
      size_t blk = len >> 2;
@@ -541,25 +592,23 @@ void arm_wt_q15_zero(
 
      while (blk--)
      {
-          *dst++ = 0.0f;
-          *dst++ = 0.0f;
-          *dst++ = 0.0f;
-          *dst++ = 0.0f;
+          write_q15x2_ia(&dst, 0);
+          write_q15x2_ia(&dst, 0);
      }
 
      while (rem--)
      {
-          *dst++ = 0.0f;
+          *dst++ = 0;
      }
 }
 
 void arm_wt_q15_mallat(
-  const q15_t* restrict in,
-  q15_t* restrict out,
+  const q15_t* in,
+  q15_t* out,
   size_t n_len,
   size_t n_dec,
-  const q15_t* restrict c,
-  const q15_t* restrict b,
+  const q15_t* c,
+  const q15_t* b,
   const size_t c_len)
 {
      const size_t c_len_m1 = c_len - 1;
@@ -568,8 +617,8 @@ void arm_wt_q15_mallat(
        tmp_a[n_len / 2 + c_len_m1],
        tmp_b[n_len / 2 + c_len_m1];
 
-     const q15_t* restrict _in = in;
-     q15_t* restrict _out = tmp_a;
+     const q15_t* _in = in;
+     q15_t* _out = tmp_a;
 
      while (n_dec--)
      {
