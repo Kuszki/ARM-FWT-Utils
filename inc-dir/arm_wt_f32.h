@@ -208,7 +208,7 @@ void arm_wt_f32_zero(
   const size_t len);
 
 /**
- * @brief Perform FIR operation
+ * @brief Perform FIR operation for pair of filters
  * @param in [in] Input data pointer
  * @param out_lp [out] Output data pointer for low-pass coefficients
  * @param out_hp [out] Output data pointer for high-pass coefficients
@@ -223,7 +223,7 @@ void arm_wt_f32_zero(
  * previous input values (equivalent to given boundary conditions).
  *
  */
-void arm_wt_f32_fir(
+void arm_wt_f32_cwt(
   const float32_t* restrict in,
   float32_t* restrict out_lp,
   float32_t* restrict out_hp,
@@ -233,7 +233,7 @@ void arm_wt_f32_fir(
   const size_t c_len);
 
 /**
- * @brief Perform FIR with decimation
+ * @brief Perform FIR with decimation for pair of filters
  * @param in [in] Input data pointer
  * @param out_lp [out] Output data pointer for low-pass coefficients
  * @param out_hp [out] Output data pointer for high-pass coefficients
@@ -248,7 +248,7 @@ void arm_wt_f32_fir(
  * previous input values (equivalent to given boundary conditions).
  *
  */
-void arm_wt_f32_firdec(
+void arm_wt_f32_fwt(
   const float32_t* restrict in,
   float32_t* restrict out_lp,
   float32_t* restrict out_hp,

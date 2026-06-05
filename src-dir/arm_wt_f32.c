@@ -144,7 +144,7 @@ void arm_wt_f32_run(
        instance->buf[1],
        instance->offset);
 
-     if (instance->dec) arm_wt_f32_firdec(
+     if (instance->dec) arm_wt_f32_fwt(
        instance->in,
        instance->buf[1] + instance->offset,
        instance->buf[0] + instance->offset,
@@ -152,7 +152,7 @@ void arm_wt_f32_run(
        instance->c,
        instance->b,
        instance->c_len);
-     else arm_wt_f32_fir(
+     else arm_wt_f32_cwt(
        instance->in,
        instance->buf[1] + instance->offset,
        instance->buf[0] + instance->offset,
@@ -168,7 +168,7 @@ void arm_wt_f32_run(
             instance->buf[2 * i + 1],
             instance->offset);
 
-          if (instance->dec) arm_wt_f32_firdec(
+          if (instance->dec) arm_wt_f32_fwt(
             instance->buf[2 * i - 1],
             instance->buf[2 * i + 1] + instance->offset,
             instance->buf[2 * i] + instance->offset,
@@ -176,7 +176,7 @@ void arm_wt_f32_run(
             instance->c,
             instance->b,
             instance->c_len);
-          else arm_wt_f32_fir(
+          else arm_wt_f32_cwt(
             instance->buf[2 * i - 1],
             instance->buf[2 * i + 1] + instance->offset,
             instance->buf[2 * i] + instance->offset,
@@ -215,7 +215,7 @@ void arm_wt_f32_scale(
      }
 }
 
-void arm_wt_f32_firdec(
+void arm_wt_f32_fwt(
   const float32_t* restrict in,
   float32_t* restrict out_lp,
   float32_t* restrict out_hp,
@@ -431,7 +431,7 @@ void arm_wt_f32_firdec(
      }
 }
 
-void arm_wt_f32_fir(
+void arm_wt_f32_cwt(
   const float32_t* restrict in,
   float32_t* restrict out_lp,
   float32_t* restrict out_hp,
@@ -697,12 +697,12 @@ void arm_wt_f32_mallat(
 
           if (n_dec)
           {
-               arm_wt_f32_firdec(_in, _out, out + n_len_p2, n_len, c, b, c_len);
+               arm_wt_f32_fwt(_in, _out, out + n_len_p2, n_len, c, b, c_len);
                arm_wt_f32_copy(_out, _out + n_len_p2, c_len_m1);
           }
           else
           {
-               arm_wt_f32_firdec(_in, out, out + n_len_p2, n_len, c, b, c_len);
+               arm_wt_f32_fwt(_in, out, out + n_len_p2, n_len, c, b, c_len);
           }
 
           if (_out == tmp_a)

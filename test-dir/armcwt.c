@@ -98,8 +98,8 @@ int main(int argc, char* argv[])
      for (size_t i = 0; i < NC; ++i) in_f[i] = mX.data[i];
      for (size_t i = 0; i < N; ++i) in_f[i + NC] = mX.data[i];
 
-     arm_wt_f32_fir(in_f, lp_A, hp_A, N, mC.data, mB.data, NC);
-     arm_wt_f32_firdec(in_f, lp_B, hp_B, N, mC.data, mB.data, NC);
+     arm_wt_f32_cwt(in_f, lp_A, hp_A, N, mC.data, mB.data, NC);
+     arm_wt_f32_fwt(in_f, lp_B, hp_B, N, mC.data, mB.data, NC);
 
      printf("\nHP A/B:\n");
      mat_print_matrix(hp_A, 1, N);
