@@ -33,15 +33,23 @@
  * is scaled and shifted calling arm_wt_q15_run. This algorithm is designed to run in cycle,
  * between subsequent ADC interrupts signed after conversion of N samples is done.
  *
+ * This implementation uses q15 data format (1 sign bit and 15 fractional bits). To provide best
+ * precission you must find shift and biass values to fit input data in full 16-bit range. You
+ * can check arm_wt_f32_instance for IEEE 754 implementation.
+ *
+ * All methods unroll loops for 4 input values and 4 filter coefficients, and as they are very fast
+ * thanks to SIMD instructions the tails are discarded. Thus this input and coeficients length
+ * must be multiply of 4 - to achieve this you can add extra zero-value coefficients.
+ *
  * Before using arm_wt_q15_run required fields must be filled and constructor arm_fwt_q15_init or
  * arm_cwt_q15_init must be executed. Fields to fill before running constructor are:
  * - arm_wt_q15_instance::c - low-pass FIR coefficients (stored in reverse order)
  * - arm_wt_q15_instance::b - high-pass FIR coefficients (stored in reverse order)
- * - arm_wt_q15_instance::scale - scale factor for ADC results (X = scale * ADC + shift)
- * - arm_wt_q15_instance::shift - shift value for ADC results (X = scale * ADC + shift)
+ * - arm_wt_q15_instance::scale - scale factor for ADC results (X = (ADC + bias) << shift)
+ * - arm_wt_q15_instance::shift - shift value for ADC results (X = (ADC + bias) << shift)
  * - arm_wt_q15_instance::n_dec - decomposition levels (at least 1)
- * - arm_wt_q15_instance::n_len - input data length (number of ADC output values)
- * - arm_wt_q15_instance::c_len - number of FIR taps (length of c must be equal length of b)
+ * - arm_wt_q15_instance::n_len - input data length (number of ADC output values, must be multiply of 4)
+ * - arm_wt_q15_instance::c_len - number of FIR taps (length of c must be be multiply of 4 and equal length of b)
  *
  * To init decimated (FWT) version you need to run arm_fwt_q15_init, where arm_cwt_q15_init
  * setup the undecimated (UFWT or CWT) version of algorithm.

@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
      if (x1 != x0) return -1;
 
-     const float32_t in_f32[] = { 0.00f, 0.00f, 0.00f, 0.15f, 0.20f, 0.25f, 0.20f, -0.05f, -0.10f, -0.15f, -0.20f, -0.25f, -0.05f, 0.0f, 0.20f, 0.25f, -0.55f, 0.55f };
+     const float32_t in_f32[] = { 0.00f, 0.00f, 0.00f, 0.15f, 0.20f, 0.25f, 0.20f, -0.05f, -0.10f, -0.15f, -0.20f, -0.25f, -0.05f, 0.0f, 0.20f, 0.25f };
      const float32_t cp_f32[] = { +0.068301, +0.118301, +0.031699, -0.018301 };
 
      const size_t NC = sizeof(cp_f32) / sizeof(float32_t);

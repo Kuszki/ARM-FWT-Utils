@@ -24,8 +24,8 @@
 
 arm_wt_status arm_fwt_q15_init(arm_wt_q15_instance* instance)
 {
-     if (!instance->n_len) return WT_WRONG_NLEN;
-     if (!instance->c_len) return WT_WRONG_CLEN;
+     if (!instance->n_len || instance->n_len & 3) return WT_WRONG_NLEN;
+     if (!instance->c_len || instance->c_len & 3) return WT_WRONG_CLEN;
 
      if (!instance->c || !instance->b) return WT_WRONG_CPTR;
 
@@ -68,12 +68,12 @@ arm_wt_status arm_fwt_q15_init(arm_wt_q15_instance* instance)
 
 arm_wt_status arm_cwt_q15_init(arm_wt_q15_instance* instance)
 {
-     if (!instance->n_len) return WT_WRONG_NLEN;
-     if (!instance->c_len) return WT_WRONG_CLEN;
+     if (!instance->n_len || instance->n_len & 3) return WT_WRONG_NLEN;
+     if (!instance->c_len || instance->c_len & 3) return WT_WRONG_CLEN;
 
      if (!instance->c || !instance->b) return WT_WRONG_CPTR;
 
-     if (instance->n_len < instance->c_len) return WT_WRONG_NDEC;
+     if ((instance->n_len >> (instance->n_dec - 1)) < instance->c_len) return WT_WRONG_NDEC;
 
      instance->offset = instance->c_len - 1;
      instance->dec = 1;
@@ -345,74 +345,6 @@ void arm_wt_q15_fwt(
 
           cnt_a -= 1;
      }
-
-     cnt_a = (n_len >> 1) & 3;
-
-     while (cnt_a)
-     {
-          ip0 = in;
-
-          cp = c;
-          bp = b;
-
-          al0 = 0;
-          ah0 = 0;
-
-          cnt_b = c_len >> 2;
-
-          while (cnt_b)
-          {
-               c0 = read_q15x2_ia(&cp);
-               b0 = read_q15x2_ia(&bp);
-
-               x0 = read_q15x2_ia(&ip0);
-
-               al0 = __SMLAD(x0, c0, al0);
-               ah0 = __SMLAD(x0, b0, ah0);
-
-               c0 = read_q15x2_ia(&cp);
-               b0 = read_q15x2_ia(&bp);
-
-               x0 = read_q15x2_ia(&ip0);
-
-               al0 = __SMLAD(x0, c0, al0);
-               ah0 = __SMLAD(x0, b0, ah0);
-
-               cnt_b -= 1;
-          }
-
-          *out_lp++ = (q15_t)(__SSAT((al0 >> 15), 16));
-          *out_hp++ = (q15_t)(__SSAT((ah0 >> 15), 16));
-
-          in += 2;
-
-          cnt_a -= 1;
-     }
-}
-
-void arm_wt_q15_fwt_S(
-  const q15_t* in,
-  q15_t* out_lp,
-  q15_t* out_hp,
-  const size_t n_len,
-  const q15_t* c,
-  const q15_t* b,
-  const size_t c_len)
-{
-
-     for (size_t i = 0; i < n_len; i += 2)
-     {
-          q31_t acc_hp = 0, acc_lp = 0;
-
-          for (size_t j = 0; j < c_len; j += 1)
-          {
-               acc_lp += (q31_t)(in[i + j] * c[j]);
-               acc_hp += (q31_t)(in[i + j] * b[j]);
-          }
-
-          *out_lp++ = (q15_t)(__SSAT((acc_lp >> 15), 16));
-          *out_hp++ = (q15_t)(__SSAT((acc_hp >> 15), 16));
-     }
 }
 
 void arm_wt_q15_cwt(
@@ -509,48 +441,6 @@ void arm_wt_q15_cwt(
           write_q15x2_ia(&out_hp, __PKHBT(__SSAT((ah2 >> 15), 16), __SSAT((ah3 >> 15), 16), 16));
 
           in += 4;
-
-          cnt_a -= 1;
-     }
-
-     cnt_a = n_len & 3;
-
-     while (cnt_a)
-     {
-          ip = in;
-          cp = c;
-          bp = b;
-
-          al0 = 0;
-          ah0 = 0;
-
-          cnt_b = c_len >> 2;
-
-          while (cnt_b)
-          {
-               c0 = read_q15x2_ia(&cp);
-               b0 = read_q15x2_ia(&bp);
-
-               x0 = read_q15x2_ia(&ip);
-
-               al0 = __SMLAD(x0, c0, al0);
-               ah0 = __SMLAD(x0, b0, ah0);
-
-               c0 = read_q15x2_ia(&cp);
-               b0 = read_q15x2_ia(&bp);
-
-               x2 = read_q15x2_ia(&ip);
-
-               al0 = __SMLAD(x2, c0, al0);
-               ah0 = __SMLAD(x2, c0, ah0);
-
-               cnt_b -= 1;
-          }
-
-          *out_lp++ = (q15_t)(__SSAT((al0 >> 15), 16));
-          *out_hp++ = (q15_t)(__SSAT((ah0 >> 15), 16));
-
-          in += 1;
 
           cnt_a -= 1;
      }
