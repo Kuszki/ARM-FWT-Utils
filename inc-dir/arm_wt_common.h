@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  ARM-FWT-Test -- FWT implementation for ARM using CMSIS-DSP library     *
- *  Copyright (C) 2025  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
+ *  {description}                                                          *
+ *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,28 +18,36 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HDF_HELPER_H
-#define HDF_HELPER_H
+#ifndef ARM_WT_COMMON_H
+#define ARM_WT_COMMON_H
 
+#include "cmsis_compiler.h"
+
+#include "arm_math_memory.h"
 #include "arm_math_types.h"
 
-#include <float.h>
-#include <limits.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef ARM_MATH_DSP
+#include "dsp/none.h"
+#endif
 
-typedef struct
+/**
+ *
+ * @brief WT status code.
+ *
+ * Specify current WT function success or fail reason.
+ *
+ */
+typedef enum
 {
-     float32_t* data;
-     size_t rows;
-     size_t cols;
-} hdf_matrix;
 
-int hdf_load_matrix(const char* filename, const char* varname, hdf_matrix* out);
-void hdf_free_matrix(hdf_matrix* matrix);
+     WT_STATUS_SUCCESS, //!< Everything is fine
+     WT_STATUS_ERROR, //!< Other error occurred
 
-void hdf_print_matrix(const hdf_matrix* matrix);
+     WT_WRONG_NLEN, //!< Data length not set - check arm_wt_q15_instance::n_len
+     WT_WRONG_CLEN, //!< Coefs length not set - check arm_wt_q15_instance::c_len
+     WT_WRONG_NDEC, //!< Decimation level is wrong - check check arm_wt_q15_instance::n_dec
+     WT_WRONG_CPTR, //!< Coefs pointer not set - check arm_wt_q15_instance::c and arm_wt_q15_instance::b
 
-#endif // HDF_HELPER_H
+} arm_wt_status;
+
+#endif // ARM_WT_COMMON_H

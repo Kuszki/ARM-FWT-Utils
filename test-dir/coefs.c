@@ -18,9 +18,14 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "mat_helper.h"
 #include "hdf_helper.h"
+#include "mat_helper.h"
+
 #include "arm_mal_f32.h"
+
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -43,9 +48,9 @@ int main(int argc, char* argv[])
 
 	printf("\nvec. B out:\n");
 	fwt_gen_b(mC.data, b, NC);
-	mat_print_matrix(b, mC.rows, mC.cols);
+        mat_print_matrix_f32(b, mC.rows, mC.cols);
 
-	bool ok = mat_compare_relative(mB.data, b, NC, 1e-6);
+        bool ok = mat_compare_relative(mB.data, b, NC, 1e-6);
 
 	hdf_free_matrix(&mC);
 	hdf_free_matrix(&mB);

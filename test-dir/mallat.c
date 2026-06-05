@@ -24,6 +24,10 @@
 #include "mat_helper.h"
 #include "hdf_helper.h"
 
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
+
 int main(int argc, char* argv[])
 {
      const char* path = argc > 1 ? argv[1] : "mallat_out.hdf";
@@ -59,7 +63,7 @@ int main(int argc, char* argv[])
      fwt_malat(mX.data, out, N, 2, mC.data, mB.data, NC);
 
      printf("\nout fwt_malat:\n");
-     mat_print_matrix(out, mY.rows, mY.cols);
+     mat_print_matrix_f32(out, mY.rows, mY.cols);
 
      bool ok1 = mat_compare_epsilon(mY.data, out, N, 1e-6);
 
@@ -73,7 +77,7 @@ int main(int argc, char* argv[])
      fwt_malat_ext(ext, out, N, 2, mC.data, mB.data, NC);
 
      printf("\nout fwt_malat_ext:\n");
-     mat_print_matrix(out, mY.rows, mY.cols);
+     mat_print_matrix_f32(out, mY.rows, mY.cols);
 
      bool ok2 = mat_compare_epsilon(mY.data, out, N, 1e-6);
 
@@ -83,7 +87,7 @@ int main(int argc, char* argv[])
      fwt_malat_ext_par(ext, out, N, 2, mC.data, mB.data, NC);
 
      printf("\nout fwt_malat_ext_par:\n");
-     mat_print_matrix(out, mY.rows, mY.cols);
+     mat_print_matrix_f32(out, mY.rows, mY.cols);
 
      bool ok3 = mat_compare_epsilon(mY.data, out, N, 1e-6);
 
@@ -103,7 +107,7 @@ int main(int argc, char* argv[])
      arm_wt_f32_mallat(ext, out, N, 2, sqC, sqB, NC);
 
      printf("\nout arm_wt_f32_mallat:\n");
-     mat_print_matrix(out, mY.rows, mY.cols);
+     mat_print_matrix_f32(out, mY.rows, mY.cols);
 
      bool ok4 = mat_compare_epsilon(mY.data, out, N, 1e-6);
 

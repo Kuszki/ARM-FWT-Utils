@@ -18,9 +18,14 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_wt_f32.h"
 #include "hdf_helper.h"
 #include "mat_helper.h"
+
+#include "arm_wt_f32.h"
+
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -75,23 +80,23 @@ int main(int argc, char* argv[])
      arm_wt_f32_run(&fwt, in_u);
 
      printf("\ninput:\n");
-     mat_print_matrix(fwt.in, 1, fwt.n_len + fwt.c_len - 1);
+     mat_print_matrix_f32(fwt.in, 1, fwt.n_len + fwt.c_len - 1);
      printf("\nHP:\n");
-     mat_print_matrix(fwt.buf[0], 1, fwt.n_len / 2 + fwt.c_len - 1);
+     mat_print_matrix_f32(fwt.buf[0], 1, fwt.n_len / 2 + fwt.c_len - 1);
      printf("\nLP:\n");
-     mat_print_matrix(fwt.buf[1], 1, fwt.n_len / 2 + fwt.c_len - 1);
+     mat_print_matrix_f32(fwt.buf[1], 1, fwt.n_len / 2 + fwt.c_len - 1);
 
      for (size_t i = 0; i < fwt.n_dec; ++i)
      {
           printf("\nlvl %zu (%zu):\n", i, fwt.lens[i]);
-          mat_print_matrix(fwt.buf[2 * i], 1, fwt.lens[i] + fwt.c_len - 1);
-          mat_print_matrix(fwt.buf[2 * i + 1], 1, fwt.lens[i] + fwt.c_len - 1);
+          mat_print_matrix_f32(fwt.buf[2 * i], 1, fwt.lens[i] + fwt.c_len - 1);
+          mat_print_matrix_f32(fwt.buf[2 * i + 1], 1, fwt.lens[i] + fwt.c_len - 1);
      }
 
      for (size_t i = 0; i <= fwt.n_dec; ++i)
      {
           printf("\nlvl %zu (%zu):\n", i, fwt.lens[i]);
-          mat_print_matrix(fwt.out[i], 1, fwt.lens[i]);
+          mat_print_matrix_f32(fwt.out[i], 1, fwt.lens[i]);
      }
 
      arm_wt_f32_run(&fwt, in_u);
@@ -99,14 +104,14 @@ int main(int argc, char* argv[])
      for (size_t i = 0; i < fwt.n_dec; ++i)
      {
           printf("\nlvl %zu (%zu):\n", i, fwt.lens[i]);
-          mat_print_matrix(fwt.buf[2 * i], 1, fwt.lens[i] + fwt.c_len - 1);
-          mat_print_matrix(fwt.buf[2 * i + 1], 1, fwt.lens[i] + fwt.c_len - 1);
+          mat_print_matrix_f32(fwt.buf[2 * i], 1, fwt.lens[i] + fwt.c_len - 1);
+          mat_print_matrix_f32(fwt.buf[2 * i + 1], 1, fwt.lens[i] + fwt.c_len - 1);
      }
 
      for (size_t i = 0; i <= fwt.n_dec; ++i)
      {
           printf("\nlvl %zu (%zu):\n", i, fwt.lens[i]);
-          mat_print_matrix(fwt.out[i], 1, fwt.lens[i]);
+          mat_print_matrix_f32(fwt.out[i], 1, fwt.lens[i]);
      }
 
      arm_wt_f32_free(&fwt);

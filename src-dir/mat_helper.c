@@ -42,7 +42,7 @@ bool mat_compare_relative(const float32_t* a, const float32_t* b,
 	return true;
 }
 
-void mat_print_matrix(const float32_t* data, size_t rows, size_t cols)
+void mat_print_matrix_f32(const float32_t* data, size_t rows, size_t cols)
 {
 	for (size_t i = 0; i < rows; ++i)
 	{
@@ -52,4 +52,16 @@ void mat_print_matrix(const float32_t* data, size_t rows, size_t cols)
 		}
 		printf("\n");
 	}
+}
+
+void mat_print_matrix_q15(const q15_t* data, size_t rows, size_t cols)
+{
+     for (size_t i = 0; i < rows; ++i)
+     {
+          for (size_t j = 0; j < cols; ++j)
+          {
+               printf("%+d\t", data[j * rows + i]);
+          }
+          printf("\n");
+     }
 }

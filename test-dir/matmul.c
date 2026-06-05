@@ -21,6 +21,8 @@
 #include "mat_helper.h"
 #include "hdf_helper.h"
 
+#include "arm_math.h"
+
 static void clean(hdf_matrix* a, hdf_matrix* x, hdf_matrix* y)
 {
 	if (a) hdf_free_matrix(a);

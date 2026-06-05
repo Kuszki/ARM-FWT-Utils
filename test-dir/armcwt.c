@@ -18,9 +18,14 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "arm_wt_f32.h"
 #include "hdf_helper.h"
 #include "mat_helper.h"
+
+#include "arm_wt_f32.h"
+
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -79,9 +84,9 @@ int main(int argc, char* argv[])
      arm_wt_f32_run(&ufwt, in_u);
 
      printf("\nHP:\n");
-     mat_print_matrix(ufwt.out[0], 1, ufwt.n_len);
+     mat_print_matrix_f32(ufwt.out[0], 1, ufwt.n_len);
      printf("\nLP:\n");
-     mat_print_matrix(ufwt.out[1], 1, ufwt.n_len);
+     mat_print_matrix_f32(ufwt.out[1], 1, ufwt.n_len);
 
      const bool ok1 = mat_compare_epsilon(ufwt.out[0], mH.data, N, 1e-5);
      const bool ok2 = mat_compare_epsilon(ufwt.out[1], mL.data, N, 1e-5);
@@ -102,11 +107,11 @@ int main(int argc, char* argv[])
      arm_wt_f32_fwt(in_f, lp_B, hp_B, N, mC.data, mB.data, NC);
 
      printf("\nHP A/B:\n");
-     mat_print_matrix(hp_A, 1, N);
-     mat_print_matrix(hp_B, 1, N / 2);
+     mat_print_matrix_f32(hp_A, 1, N);
+     mat_print_matrix_f32(hp_B, 1, N / 2);
      printf("\nLP A/B:\n");
-     mat_print_matrix(lp_A, 1, N);
-     mat_print_matrix(lp_B, 1, N / 2);
+     mat_print_matrix_f32(lp_A, 1, N);
+     mat_print_matrix_f32(lp_B, 1, N / 2);
 
      bool ok3 = true;
      bool ok4 = true;

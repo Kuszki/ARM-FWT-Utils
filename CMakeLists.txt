@@ -29,7 +29,10 @@ add_library(lib-fwt
 	src-dir/arm_mal_f32.c
 	inc-dir/arm_mal_f32.h
 	src-dir/arm_wt_f32.c
-	inc-dir/arm_wt_f32.h)
+	inc-dir/arm_wt_f32.h
+	src-dir/arm_wt_q15.c
+	inc-dir/arm_wt_q15.h
+	inc-dir/arm_wt_common.h)
 target_link_libraries(lib-fwt PUBLIC CMSISDSP m)
 
 add_executable(test-base test-dir/base.c)
@@ -63,6 +66,10 @@ add_test(NAME test-armcwt COMMAND test-cwt)
 add_executable(test-fwt test-dir/armfwt.c)
 target_link_libraries(test-fwt PUBLIC helper-mat helper-hdf lib-fwt)
 add_test(NAME test-armfwt COMMAND test-fwt)
+
+add_executable(test-qwt test-dir/armqwt.c)
+target_link_libraries(test-qwt PUBLIC helper-mat helper-hdf lib-fwt CMSISDSP)
+add_test(NAME test-armqwt COMMAND test-qwt)
 
 execute_process(
 	COMMAND ${Octave_EXECUTABLE} gen_multest.m
