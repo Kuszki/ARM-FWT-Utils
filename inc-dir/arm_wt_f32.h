@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
- *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
+ *  Wavelet Transform Toolbox for ARM Cortex-M4 flatform                   *
+ *  Copyright (C) 2026  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,6 +17,28 @@
  *  along with this program. If not, see http://www.gnu.org/licenses/.     *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/**
+ *
+ * @file arm_wt_f32.h
+ * @brief Implementation of float32_t wavelet transform.
+ * @see arm_wt_f32_instance
+ *
+ * This file contains declarations for wavelet transform object in case of float32_t output
+ * data type. Also it contains some data type related support functions.
+ *
+ */
+
+/**
+ *
+ * @file arm_wt_f32.c
+ * @brief Implementation of float32_t wavelet transform.
+ * @see arm_wt_f32_instance
+ *
+ * This file contains dafinitions for wavelet transform object in case of float32_t output
+ * data type. Also it contains some data type related support functions.
+ *
+ */
 
 #ifndef ARM_WT_F32_H
 #define ARM_WT_F32_H
@@ -41,8 +63,8 @@
  * arm_cwt_f32_init must be executed. Fields to fill before running constructor are:
  * - arm_wt_f32_instance::c - low-pass FIR coefficients (stored in reverse order)
  * - arm_wt_f32_instance::b - high-pass FIR coefficients (stored in reverse order)
- * - arm_wt_f32_instance::scale - scale factor for ADC results (X = scale * ADC + shift)
- * - arm_wt_f32_instance::shift - shift value for ADC results (X = scale * ADC + shift)
+ * - arm_wt_f32_instance::scale - scale factor for ADC results (X = scale * ADC + bias)
+ * - arm_wt_f32_instance::bias - shift value for ADC results (X = scale * ADC + bias)
  * - arm_wt_f32_instance::n_dec - decomposition levels (at least 1)
  * - arm_wt_f32_instance::n_len - input data length (number of ADC output values)
  * - arm_wt_f32_instance::c_len - number of FIR taps (length of c must be equal length of b)

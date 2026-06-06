@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
- *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
+ *  Wavelet Transform Toolbox for ARM Cortex-M4 flatform                   *
+ *  Copyright (C) 2026  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,10 +18,18 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/**
+ *
+ * @file arm_wt_common.h
+ * @brief Common data types for wavelet transform toolbox.
+ *
+ * This file contains common data types fof wavelet transform toolbox. You don't need to include this file
+ * in your project. This file is refferenced by propher istance of WT objects.
+ *
+ */
+
 #ifndef ARM_WT_COMMON_H
 #define ARM_WT_COMMON_H
-
-#include "cmsis_compiler.h"
 
 #include "arm_math_memory.h"
 #include "arm_math_types.h"
@@ -40,13 +48,13 @@
 typedef enum
 {
 
-     WT_STATUS_SUCCESS, //!< Everything is fine
-     WT_STATUS_ERROR, //!< Other error occurred
+     WT_STATUS_SUCCESS, //!< Everything is fine - zero code
+     WT_STATUS_ERROR, //!< Other error occurred - not used
 
-     WT_WRONG_NLEN, //!< Data length not set - check arm_wt_q15_instance::n_len
-     WT_WRONG_CLEN, //!< Coefs length not set - check arm_wt_q15_instance::c_len
-     WT_WRONG_NDEC, //!< Decimation level is wrong - check check arm_wt_q15_instance::n_dec
-     WT_WRONG_CPTR, //!< Coefs pointer not set - check arm_wt_q15_instance::c and arm_wt_q15_instance::b
+     WT_WRONG_NLEN, //!< Data length not set - check n_len
+     WT_WRONG_CLEN, //!< Coefs length not set - check c_len
+     WT_WRONG_NDEC, //!< Decimation level is wrong - check n_dec
+     WT_WRONG_CPTR, //!< Coefs pointer not set - check c and b
 
 } arm_wt_status;
 

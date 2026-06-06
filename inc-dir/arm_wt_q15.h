@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
- *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
+ *  Wavelet Transform Toolbox for ARM Cortex-M4 flatform                   *
+ *  Copyright (C) 2026  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,6 +17,28 @@
  *  along with this program. If not, see http://www.gnu.org/licenses/.     *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/**
+ *
+ * @file arm_wt_q15.h
+ * @brief Implementation of int16_t wavelet transform.
+ * @see arm_wt_q15_instance
+ *
+ * This file contains declarations for wavelet transform object in case of q15_t output
+ * data type. Also it contains some data type related support functions.
+ *
+ */
+
+/**
+ *
+ * @file arm_wt_q15.c
+ * @brief Implementation of int16_t wavelet transform.
+ * @see arm_wt_q15_instance
+ *
+ * This file contains dafinitions for wavelet transform object in case of q15_t output
+ * data type. Also it contains some data type related support functions.
+ *
+ */
 
 #ifndef ARM_WT_Q15_H
 #define ARM_WT_Q15_H

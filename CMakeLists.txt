@@ -11,7 +11,7 @@ enable_testing()
 find_program(OCTAVE_EXECUTABLE octave REQUIRED)
 find_package(HDF5 REQUIRED COMPONENTS C HL)
 
-include_directories(inc-dir)
+include_directories(inc-dir cmsis-core)
 add_subdirectory(cmsis-dsp)
 
 get_target_property(
@@ -83,16 +83,16 @@ add_test(NAME test-armqwt COMMAND test-qwt)
 
 execute_process(
 	COMMAND ${Octave_EXECUTABLE} gen_multest.m
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/octave-dir)
 execute_process(
 	COMMAND ${Octave_EXECUTABLE} gen_fwtmat.m
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/octave-dir)
 execute_process(
 	COMMAND ${Octave_EXECUTABLE} gen_mallat.m
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/octave-dir)
 execute_process(
 	COMMAND ${Octave_EXECUTABLE} gen_firtest.m
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src-dir)
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/octave-dir)
 
 file(GLOB HDF_SAVED_VARIABLES "${PROJECT_SOURCE_DIR}/data-dir/*.hdf")
 file(COPY ${HDF_SAVED_VARIABLES} DESTINATION ${PROJECT_BINARY_DIR})
