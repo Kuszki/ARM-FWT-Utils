@@ -20,6 +20,21 @@
 
 /**
  *
+ * @defgroup arm_wt_f32_class arm_wt_f32
+ *
+ * @brief 32-bit floating point version of wavelet transform.
+ * @see arm_wt_f32_class
+ *
+ * This is floating point version of wavelet transform algorithm, slower to compute then q16_t
+ * variant, but it provides better precission. To use this implementation create arm_wt_f32_instance
+ * object and use arm_wt_f32_run method.
+ *
+ * @{
+ *
+ */
+
+/**
+ *
  * @file arm_wt_f32.h
  * @brief Implementation of float32_t wavelet transform.
  * @see arm_wt_f32_instance
@@ -196,7 +211,7 @@ void arm_wt_f32_scale(
  *
  */
 void arm_wt_f32_copy(
-  const float32_t* scr,
+  const float32_t* src,
   float32_t* dst,
   const size_t len);
 
@@ -288,5 +303,7 @@ void arm_wt_f32_mallat(
   const float32_t* c,
   const float32_t* b,
   const size_t c_len);
+
+/** @} */
 
 #endif

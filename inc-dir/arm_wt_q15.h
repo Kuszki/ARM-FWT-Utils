@@ -20,6 +20,21 @@
 
 /**
  *
+ * @defgroup arm_wt_q15_class arm_wt_q15
+ *
+ * @brief 16-bit fixed point version of wavelet transform.
+ * @see arm_wt_q15_class
+ *
+ * This is fixed point version of wavelet transform algorithm, faster to compute then float32_t
+ * variant, but it provides less precission. To use this implementation create arm_wt_q15_instance
+ * object and use arm_wt_q15_run method.
+ *
+ * @{
+ *
+ */
+
+/**
+ *
  * @file arm_wt_q15.h
  * @brief Implementation of int16_t wavelet transform.
  * @see arm_wt_q15_instance
@@ -174,14 +189,12 @@ void arm_wt_q15_run(
  * @param in [in] Input data pointer
  * @param out [out] Output data pointer
  * @param len [in] Number of elements to convert
- * @param scale [in] Scale factor
  * @param shift [in] Shift value
+ * @param bias [in] Bias value
  *
- * This function performs uint16_t -> q15_t conversion with scale and shift
- according
- * to formula out = scale * in + shift. Input and output buffers must be
- length of at least
- * len. This function unroll loop using 4 MAC operations per iteration.
+ * This function performs uint16_t -> q15_t conversion with bias and shift according
+ * to formula out = (in + bias) << shift. Input and output buffers must be length of at
+ * least len. This function unroll loop using 4 MAC operations per iteration.
  *
  */
 void arm_wt_q15_scale(
@@ -202,7 +215,7 @@ void arm_wt_q15_scale(
  *
  */
 void arm_wt_q15_copy(
-  const q15_t* scr,
+  const q15_t* src,
   q15_t* dst,
   const size_t len);
 
@@ -253,10 +266,9 @@ void arm_wt_q15_cwt(
  * @param c [in] Pointer to low-pass FIR coefficients
  * @param b [in] Pointer to high-pass FIR coefficients
  * @param c_len [in] Number FIR coefficients
- * @param inc [in] Decimation factor (number of elements to skip per output value)
  *
  * This function perform parallel input signal decomposition using given FIR coefficients. The length
- * of out_lp and out_hp must be at least n_len / inc. The length of c and b must be the same and equal
+ * of out_lp and out_hp must be at least n_len / 2. The length of c and b must be the same and equal
  * to c_len. The actual length of in must be n_len+c_len-1 where the first c_len-1 elements contains
  * previous input values (equivalent to given boundary conditions).
  *
@@ -282,7 +294,7 @@ void arm_wt_q15_fwt(
  *
  * This function perform parallel input signal decomposition using given FIR coefficients. Decomposition
  * is repeated n_dec times, where input of next level is low-pass output from previous level. The length
- * of out_lp and out_hp must be at least n_len / inc. The length of c and b must be the same and equal
+ * of out_lp and out_hp must be at least n_len / 2. The length of c and b must be the same and equal
  * to c_len. The actual length of in must be n_len+c_len-1 where the last c_len-1 elements contains
  * previous input values (equivalent to given boundary conditions).
  *
@@ -295,5 +307,7 @@ void arm_wt_q15_mallat(
   const q15_t* c,
   const q15_t* b,
   const size_t c_len);
+
+/** @} */
 
 #endif
