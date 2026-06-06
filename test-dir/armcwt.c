@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
           .n_len = N,
           .n_dec = 1,
           .scale = 1.0f,
-          .shift = 0.0f,
+          .bias = 0.0f,
      };
 
      arm_wt_status s = arm_cwt_f32_init(&ufwt);
