@@ -66,7 +66,7 @@ const size_t NC = sizeof(coef_C) / sizeof(float32_t);
 
 // Define buffer for ADC. Usually you need 2 * N buffer length to enable
 // continuous computation. While ADC processes N samples the algorithm 
-// compute previous N values. To make this example simple it is not used.
+// compute previous N values. To make this example simple it isn't used.
 const size_t N = 128; // Number of samples provided as input for single run
 uint16_t ADC_out[N]; // Buffer where ADC stores raw signal samples
 
@@ -107,6 +107,36 @@ for (size_t i = 0; i <= fwt.n_dec; ++i) // iterate by decomposition levels
 After everything is finished and the object instance is no longer needed you need to free all resources calling:
 ``` c
 arm_wt_f32_free(&fwt);
+```
+
+If you don't need to remember previous filter state and you need only calculate FWT fast for provided input values you can use:
+``` c
+// Define low pass FIR coefficients in reverse order
+const float32_t coef_C[] = { +0.68301f, +1.18301f, +0.31699f, -0.18301f };
+
+// Define high pass FIR coefficients in reverse order
+const float32_t coef_B[] = { -0.18301f, -0.31699f, +1.18301f, -0.68301f };
+
+// Number of coefficients -- len(C) must be equal to len(B)
+const size_t NC = sizeof(coef_C) / sizeof(float32_t);
+
+const size_t N = 128;     // Number of samples provided as input for single run
+float32_t in[N + NC - 1]; // Input values with extra NC - 1 samples
+float32_t out[N];         // Buffer where N output values are stored
+
+// Perform single run of FWT for prepared input values
+arm_wt_f32_mallat(
+  in,     // input data with extra samples depending on boundary condition
+  out,    // output data aligned as in GNU Octave fwt function
+  N,      // number of input values without extra ones
+  2,      // number of decomposition iterations
+  coef_C, // low pass FIR coefficients in reverse order
+  coef_B, // high pass FIR coefficients in reverse order
+  NC      // number of FIR coeficients for single filter
+);
+
+// Print output values
+for (size_t i = 0; i < N; ++i) printf("%+5.5f\t", out[i]);
 ```
 
 ## Credits
