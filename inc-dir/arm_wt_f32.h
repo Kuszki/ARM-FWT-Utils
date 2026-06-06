@@ -67,8 +67,8 @@ typedef struct
      const float32_t* c; //!< Pointer to low-pass FIR coefficients (stored in reverse order)
      const float32_t* b; //!< Pointer to high-pass FIR coefficients (stored in reverse order)
 
-     float32_t scale; //!< Scale factor for ADC results (X = scale * ADC + shift)
-     float32_t shift; //!< Shift value for ADC results (X = scale * ADC + shift)
+     float32_t scale; //!< Scale factor for ADC results (X = scale * ADC + bias)
+     float32_t bias; //!< Bias value for ADC results (X = scale * ADC + bias)
 
      size_t n_dec; //!< Number of decomposition levels (where n_dec > 1)
      size_t n_len; //!< Input vector data length (number of ADC output values)
@@ -144,15 +144,15 @@ void arm_wt_f32_run(
   const uint16_t* in);
 
 /**
- * @brief Perform uint16_t -> float32_t conversion with scale and shift
+ * @brief Perform uint16_t -> float32_t conversion with scale and bias
  * @param in [in] Input data pointer
  * @param out [out] Output data pointer
  * @param len [in] Number of elements to convert
  * @param scale [in] Scale factor
- * @param shift [in] Shift value
+ * @param bias [in] Shift value
  *
- * This function performs uint16_t -> float32_t conversion with scale and shift according
- * to formula out = scale * in + shift. Input and output buffers must be length of at least
+ * This function performs uint16_t -> float32_t conversion with scale and bias according
+ * to formula out = scale * in + bias. Input and output buffers must be length of at least
  * len. This function unroll loop using 4 MAC operations per iteration.
  *
  */
@@ -161,7 +161,7 @@ void arm_wt_f32_scale(
   float32_t* out,
   const size_t len,
   const float32_t scale,
-  const float32_t shift);
+  const float32_t bias);
 
 /**
  * @brief Copy float32_t from source to destination without any changes

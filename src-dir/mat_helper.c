@@ -20,8 +20,11 @@
 
 #include "mat_helper.h"
 
-bool mat_compare_epsilon(const float32_t* a, const float32_t* b,
-					const size_t n, const float32_t e)
+bool mat_compare_epsilon(
+  const float32_t* a,
+  const float32_t* b,
+  const size_t n,
+  const float32_t e)
 {
 	for (size_t i = 0; i < n; ++i)
 	{
@@ -31,8 +34,11 @@ bool mat_compare_epsilon(const float32_t* a, const float32_t* b,
 	return true;
 }
 
-bool mat_compare_relative(const float32_t* a, const float32_t* b,
-					 const size_t n, const float32_t e)
+bool mat_compare_relative(
+  const float32_t* a,
+  const float32_t* b,
+  const size_t n,
+  const float32_t e)
 {
 	for (size_t i = 0; i < n; ++i)
 	{
@@ -42,7 +48,10 @@ bool mat_compare_relative(const float32_t* a, const float32_t* b,
 	return true;
 }
 
-void mat_print_matrix_f32(const float32_t* data, size_t rows, size_t cols)
+void mat_print_matrix_f32(
+  const float32_t* data,
+  size_t rows,
+  size_t cols)
 {
 	for (size_t i = 0; i < rows; ++i)
 	{
@@ -54,7 +63,10 @@ void mat_print_matrix_f32(const float32_t* data, size_t rows, size_t cols)
 	}
 }
 
-void mat_print_matrix_q15(const q15_t* data, size_t rows, size_t cols)
+void mat_print_matrix_q15(
+  const q15_t* data,
+  size_t rows,
+  size_t cols)
 {
      for (size_t i = 0; i < rows; ++i)
      {

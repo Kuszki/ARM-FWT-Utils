@@ -137,7 +137,7 @@ void arm_wt_f32_run(
        instance->in + instance->offset,
        instance->n_len,
        instance->scale,
-       instance->shift);
+       instance->bias);
 
      if (instance->n_dec > 1) arm_wt_f32_copy(
        instance->buf[1] + instance->lens[0],
@@ -192,39 +192,69 @@ void arm_wt_f32_scale(
   float32_t* out,
   const size_t len,
   const float32_t scale,
-  const float32_t shift)
+  const float32_t bias)
 {
      size_t blk = len >> 2;
      size_t rem = len & 3;
 
-     if (shift)
+     if (bias != 0.0f && scale != 1.0f)
      {
           while (blk--)
           {
-               *out++ = *in++ * scale + shift;
-               *out++ = *in++ * scale + shift;
-               *out++ = *in++ * scale + shift;
-               *out++ = *in++ * scale + shift;
+               *out++ = *in++ * scale + bias;
+               *out++ = *in++ * scale + bias;
+               *out++ = *in++ * scale + bias;
+               *out++ = *in++ * scale + bias;
           }
 
           while (rem--)
           {
-               *out++ = *in++ * scale + shift;
+               *out++ = *in++ * scale + bias;
+          }
+     }
+     else if (bias == 0.0f && scale != 1.0f)
+     {
+          while (blk--)
+          {
+               *out++ = *in++ * scale;
+               *out++ = *in++ * scale;
+               *out++ = *in++ * scale;
+               *out++ = *in++ * scale;
+          }
+
+          while (rem--)
+          {
+               *out++ = *in++ * scale;
+          }
+     }
+     else if (bias != 0.0f && scale == 1.0f)
+     {
+          while (blk--)
+          {
+               *out++ = *in++ + bias;
+               *out++ = *in++ + bias;
+               *out++ = *in++ + bias;
+               *out++ = *in++ + bias;
+          }
+
+          while (rem--)
+          {
+               *out++ = *in++ + bias;
           }
      }
      else
      {
           while (blk--)
           {
-               *out++ = *in++ * scale;
-               *out++ = *in++ * scale;
-               *out++ = *in++ * scale;
-               *out++ = *in++ * scale;
+               *out++ = *in++;
+               *out++ = *in++;
+               *out++ = *in++;
+               *out++ = *in++;
           }
 
           while (rem--)
           {
-               *out++ = *in++ * scale;
+               *out++ = *in++;
           }
      }
 }

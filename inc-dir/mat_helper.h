@@ -26,10 +26,26 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-bool mat_compare_epsilon(const float32_t* a, const float32_t* b, const size_t n, const float32_t e);
-bool mat_compare_relative(const float32_t* a, const float32_t* b, const size_t n, const float32_t e);
+bool mat_compare_epsilon(
+  const float32_t* a,
+  const float32_t* b,
+  const size_t n,
+  const float32_t e);
 
-void mat_print_matrix_f32(const float32_t* data, size_t rows, size_t cols);
-void mat_print_matrix_q15(const q15_t* data, size_t rows, size_t cols);
+bool mat_compare_relative(
+  const float32_t* a,
+  const float32_t* b,
+  const size_t n,
+  const float32_t e);
+
+void mat_print_matrix_f32(
+  const float32_t* data,
+  size_t rows,
+  size_t cols);
+
+void mat_print_matrix_q15(
+  const q15_t* data,
+  size_t rows,
+  size_t cols);
 
 #endif // HDF_HELPER_H
