@@ -51,6 +51,64 @@ This project is not provided as prebuild library due large compiler based optimi
 
 Neither this library don't depend on any other project directly, it requires some base definitions. First one is platform independent explicit definitions of common data types, provided by `arm_math_types.h` header to keep the best compatibility with `CMSIS-DSP`. Second one is `arm_math_memory.h` to provide memory read/write functions to handle `SIMD` memory operations. The first two headers are linked with `CMSIS-DSP`. The last part is `cmsis_compiler.h`, required by `CMSIS-DSP` and to provide `SIMD` instructions wrappers, provided by `CMSIS-CORE`. As there is no `CMake` support in case of `CMSIS-CORE` all required headers are provided in `cmsis-core` directory.
 
+## Usage
+
+Before using you need to create proper instance of `arm_wt` object, depending on selected implementation. To do this fill required fields of data structure and call constructor:
+``` c
+// Define low pass FIR coefficients in reverse order
+const float32_t coef_C[] = { +0.68301f, +1.18301f, +0.31699f, -0.18301f };
+
+// Define high pass FIR coefficients in reverse order
+const float32_t coef_B[] = { -0.18301f, -0.31699f, +1.18301f, -0.68301f };
+
+// Number of coefficients -- len(C) must be equal to len(B)
+const size_t NC = sizeof(coef_C) / sizeof(float32_t);
+
+// Define buffer for ADC. Usually you need 2 * N buffer length to enable
+// continuous computation. While ADC processes N samples the algorithm 
+// compute previous N values. To make this example simple it is not used.
+const size_t N = 128; // Number of samples provided as input for single run
+uint16_t ADC_out[N]; // Buffer where ADC stores raw signal samples
+
+// Fill required fields of WT object before running constructor
+arm_wt_f32_instance fwt = {
+  .c = coef_C,    // hi pass coefficients
+  .b = coef_B,    // lo pass coefficients
+  .c_len = NC,    // number of coefficients
+  .n_len = N,     // input data length for single run
+  .n_dec = 2,     // number of decomposition iterations
+  .scale = 1.0f,  // adc scale factor and bias value to
+  .bias = 0.0f,   // compute in = adc * scale + bias
+};
+
+// Init all internal buffers and settings and check status
+arm_wt_status s = arm_fwt_f32_init(&fwt);
+
+if (s != WT_STATUS_SUCCESS) {} // error occurred
+``` 
+
+After initiation you can make computations and you can check the results:
+``` c
+arm_wt_f32_run(&fwt, ADC_out); // compute FWT and store outputs internally
+
+for (size_t i = 0; i <= fwt.n_dec; ++i) // iterate by decomposition levels
+{
+  printf("\nlvl %zu (%zu samples):\n", i, fwt.lens[i]);
+  
+  for (size_t j = 0; j < fwt.lens[i]; ++j)
+  {
+  	printf("%+5.5f\t", fwt.out[i][j]);
+  }
+  
+  printf("\n");
+}
+```
+
+After everything is finished and the object instance is no longer needed you need to free all resources calling:
+``` c
+arm_wt_f32_free(&fwt);
+```
+
 ## Credits
 
 - [Octave-FWT-Utils](https://github.com/Kuszki/Octave-FWT-Utils) -- GPL-3 -- some helpers for `GNU Octave`.
