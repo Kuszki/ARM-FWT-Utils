@@ -6,6 +6,8 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
+set(CMAKE_C_FLAGS_RELEASE "-Ofast -march=native")
+
 enable_testing()
 
 find_program(OCTAVE_EXECUTABLE octave REQUIRED)

@@ -116,8 +116,8 @@ int main(int argc, char* argv[])
      bool ok3 = true;
      bool ok4 = true;
 
-     for (size_t i = 0; i < N / 2; ++i) ok3 = ok3 && (lp_A[2 * i] == lp_B[i]);
-     for (size_t i = 0; i < N / 2; ++i) ok4 = ok4 && (hp_A[2 * i] == hp_B[i]);
+     for (size_t i = 0; i < N / 2; ++i) ok3 = ok3 && (fabs(lp_A[2 * i] - lp_B[i]) < 1e-5);
+     for (size_t i = 0; i < N / 2; ++i) ok4 = ok4 && (fabs(hp_A[2 * i] - hp_B[i]) < 1e-5);
 
      printf("\arm_wt_f32_fir vs arm_wt_f32_firdec LP: %s\n", ok3 ? "PASS" : "FAIL");
      printf("\arm_wt_f32_fir vs arm_wt_f32_firdec HP: %s\n", ok4 ? "PASS" : "FAIL");
